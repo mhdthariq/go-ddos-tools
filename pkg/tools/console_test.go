@@ -97,7 +97,7 @@ func TestUpdateNetworkStatsConsistency(t *testing.T) {
 
 	// Take multiple readings
 	readings := make([]NetworkStats, 5)
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		updateNetworkStats()
 		readings[i] = currentStats
 		if i < 4 {

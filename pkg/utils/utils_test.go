@@ -219,7 +219,7 @@ func TestRandInt(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			for i := 0; i < 100; i++ {
+			for range 100 {
 				result := RandInt(tt.min, tt.max)
 				if result < tt.min || result > tt.max {
 					t.Errorf("RandInt(%d, %d) = %d; out of range [%d, %d]", tt.min, tt.max, result, tt.min, tt.max)
@@ -273,7 +273,7 @@ func TestRandString(t *testing.T) {
 
 // TestRandIPv4 tests random IPv4 generation
 func TestRandIPv4(t *testing.T) {
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		ip := RandIPv4()
 
 		// Verify format
