@@ -6,6 +6,9 @@
 
 A powerful network stress testing and analysis toolkit written in Go. This project is a modern reimplementation of MHDDoS with enhanced performance, cross-platform support, and additional security testing capabilities.
 
+**Maintained By**: Muhammad Thariq  
+**Version**: 2.4 SNAPSHOT
+
 ## ⚠️ Legal Disclaimer
 
 **THIS SOFTWARE IS FOR EDUCATIONAL AND AUTHORIZED TESTING PURPOSES ONLY.**
@@ -25,6 +28,7 @@ A powerful network stress testing and analysis toolkit written in Go. This proje
 - [Quick Start](#quick-start)
 - [Project Structure](#project-structure)
 - [Documentation](#documentation)
+- [Recent Updates](#recent-updates)
 - [Requirements](#requirements)
 - [License](#license)
 - [Contributing](#contributing)
@@ -57,17 +61,22 @@ A powerful network stress testing and analysis toolkit written in Go. This proje
 
 ## 🎯 Supported Attack Methods
 
-### Layer 7 (Application Layer) - 27 Methods
+### Layer 7 (Application Layer) - 26 Methods ✅ 100% COMPLETE!
 
-**✅ Implemented (8):**
+**✅ Basic HTTP Methods (8):**
 ```
 GET, POST, HEAD, STRESS, SLOW, NULL, COOKIE, PPS
 ```
 
-**🚧 Coming Soon (19):**
+**✅ Bypass & Protection Evasion (7):**
 ```
-CFB, BYPASS, OVH, DYN, EVEN, GSB, DGB, AVB, CFBUAM, APACHE,
-XMLRPC, BOT, BOMB, DOWNLOADER, KILLER, TOR, RHEX, STOMP
+CFB, BYPASS, OVH, DYN, DGB, AVB, CFBUAM
+```
+
+**✅ Advanced Techniques (11):**
+```
+EVEN, GSB, APACHE, XMLRPC, BOT, BOMB, DOWNLOADER, 
+KILLER, TOR, RHEX, STOMP
 ```
 
 ### Layer 4 (Transport Layer) - 14 Methods
@@ -151,8 +160,18 @@ ddos-tools/
 ├── main.go                      # Entry point
 ├── config.json                  # Configuration file
 ├── go.mod                       # Go module definition
+├── LICENSE                      # MIT License
 ├── README.md                    # This file
-├── USAGE.md                     # Detailed usage guide
+│
+├── docs/                        # Documentation
+│   ├── USAGE.md                # Detailed usage guide
+│   ├── LEGAL.md                # Legal guidelines
+│   ├── LEGAL-QUICK-REF.md      # Quick legal reference
+│   ├── LAYER7-METHODS.md       # Layer 7 methods reference
+│   ├── LAYER4-METHODS.md       # Layer 4 methods reference
+│   ├── PROXIES.md              # Proxy configuration guide
+│   ├── USER-AGENTS.md          # User agent documentation
+│   └── CHANGELOG.md            # Change history
 │
 ├── pkg/                         # Core packages
 │   ├── attacks/                 # Attack implementations
@@ -193,9 +212,63 @@ ddos-tools/
 ## 📚 Documentation
 
 For detailed usage instructions, examples, and advanced configurations, see:
-- **[USAGE.md](USAGE.md)** - Comprehensive usage guide
+
+### Core Documentation
+- **[USAGE.md](docs/USAGE.md)** - Comprehensive usage guide with examples
+- **[CHANGELOG.md](docs/CHANGELOG.md)** - Version history and updates
+
+### Legal & Compliance
+- **[LEGAL.md](docs/LEGAL.md)** - Detailed legal guidelines and compliance requirements
+- **[LEGAL-QUICK-REF.md](docs/LEGAL-QUICK-REF.md)** - Quick legal reference card
+
+### Technical Documentation
+- **[USER-AGENTS.md](docs/USER-AGENTS.md)** - User agent implementation and best practices
+- **[LAYER7-METHODS.md](docs/LAYER7-METHODS.md)** - Complete Layer 7 methods reference (26 methods)
+- **[LAYER4-METHODS.md](docs/LAYER4-METHODS.md)** - Complete Layer 4 methods reference (14 methods)
+- **[PROXIES.md](docs/PROXIES.md)** - Proxy configuration and usage guide
+- **[CROSS-PLATFORM.md](docs/CROSS-PLATFORM.md)** - Cross-platform usage guide (Linux, macOS, Windows)
+- **[CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Documentation contribution guidelines
 - **[Configuration Guide](docs/CONFIGURATION.md)** - Config file setup (Coming Soon)
 - **[API Documentation](docs/API.md)** - Developer API reference (Coming Soon)
+
+## 🔄 Recent Updates
+
+### Latest Changes (November 2025)
+- 🎉 **ALL 26 LAYER 7 METHODS IMPLEMENTED - 100% COMPLETE!**
+- ✅ **18 New Layer 7 Methods Added**: CFB, BYPASS, OVH, DYN, EVEN, GSB, DGB, AVB, CFBUAM, APACHE, XMLRPC, BOT, BOMB, DOWNLOADER, KILLER, TOR, RHEX, STOMP
+- ✅ **Added Linux User Agents**: Enhanced cross-platform coverage with Chrome and Firefox on Linux
+- ✅ **Documentation Reorganization**: Created `docs/` folder for better organization
+- ✅ **New Documentation**: Added USER-AGENTS.md, CHANGELOG.md, and CONTRIBUTING.md
+- ✅ **Platform Diversity**: Now includes 6 default user agents across Windows, macOS, and Linux
+
+### User Agent Coverage
+The tool now includes diverse user agents for realistic traffic simulation:
+- **Windows**: Chrome 74, Chrome 77, Firefox 69 (3 agents - 50%)
+- **macOS**: Safari 14 (1 agent - 17%)
+- **Linux**: Chrome 91, Firefox 89 on Ubuntu (2 agents - 33%)
+
+See [USER-AGENTS.md](docs/USER-AGENTS.md) for detailed information.
+
+### Layer 7 Methods by Category
+
+**Basic HTTP (8 methods)**
+- GET, POST, HEAD - Standard HTTP flooding
+- STRESS, SLOW - Connection/resource exhaustion
+- NULL, COOKIE, PPS - Specialized flooding techniques
+
+**Bypass & Evasion (7 methods)**
+- CFB, CFBUAM - CloudFlare bypass techniques
+- BYPASS - Generic WAF bypass
+- OVH, DGB - Provider-specific bypasses
+- DYN, AVB - Dynamic and anti-bot evasion
+
+**Advanced (11 methods)**
+- EVEN, GSB, BOT - Event-based and bot simulation
+- APACHE, XMLRPC - Vulnerability exploitation
+- BOMB, DOWNLOADER, KILLER - High-volume attacks
+- TOR, RHEX, STOMP - Specialized targeting
+
+See [USAGE.md](docs/USAGE.md) for detailed usage of each method.
 
 ## 🔧 Requirements
 
@@ -275,17 +348,22 @@ Contributions are welcome! Please:
 - Use responsibly and only on authorized systems
 - Always obtain proper authorization before testing
 
-## 📝 Version History
+## 📊 Version History
 
 - **v2.4 SNAPSHOT (Go)** - Current development version
   - Complete Go rewrite
   - Enhanced performance
   - Cross-platform support
   - Modern Go idioms (Go 1.22+)
-  - **Layer 7**: 8/27 methods implemented (30%)
-  - **Layer 4**: 14/14 methods implemented (100%)
-  - **Amplification**: 7/7 methods implemented (100%)
+  - Linux user agent support added
+  - Improved documentation structure
+  - **Layer 7**: 26/26 methods implemented (100%) ✅ **COMPLETE!**
+  - **Layer 4**: 14/14 methods implemented (100%) ✅
+  - **Amplification**: 7/7 methods implemented (100%) ✅
   - **Tools**: 5/7 tools implemented (71%)
+  - **Total Attack Methods**: 47/47 (100%) ✅
+
+See [CHANGELOG.md](docs/CHANGELOG.md) for detailed version history.
 
 ## 📄 License
 
@@ -301,7 +379,8 @@ This project is licensed under the **MIT License** with additional terms for res
 
 **Required Reading:**
 - [LICENSE](LICENSE) - Full MIT License text and legal disclaimer
-- [LEGAL.md](LEGAL.md) - Comprehensive legal guidelines and responsible use
+- [LEGAL.md](docs/LEGAL.md) - Comprehensive legal guidelines and responsible use
+- [LEGAL-QUICK-REF.md](docs/LEGAL-QUICK-REF.md) - Quick legal reference
 
 **Summary**: You are free to use this software for legitimate security testing, education, and research. However, you **MUST** obtain proper authorization before testing any systems you don't own. Unauthorized use is illegal and violations will be prosecuted.
 
@@ -311,6 +390,12 @@ This project is licensed under the **MIT License** with additional terms for res
 - Go community for excellent tooling and libraries
 - Contributors and testers
 
+## 👤 Maintainer
+
+**Muhammad Thariq**
+- Copyright © 2025 Muhammad Thariq
+- Licensed under MIT with Educational Use Terms
+
 ## 📞 Contact & Support
 
 - **Issues**: [GitHub Issues](https://github.com/go-ddos-tools/ddos-tools/issues)
@@ -318,4 +403,6 @@ This project is licensed under the **MIT License** with additional terms for res
 
 ---
 
+**Maintained By**: Muhammad Thariq  
+**Last Updated**: November 2025  
 **Remember**: Use this tool responsibly and legally. Unauthorized attacks are illegal and unethical.

