@@ -106,10 +106,8 @@ func TestUpdateNetworkStatsConsistency(t *testing.T) {
 	}
 
 	// Verify all readings are monotonically non-decreasing
-	for i := range len(readings) {
-		if i == 0 {
-			continue
-		}
+	for i := range len(readings) - 1 {
+		i = i + 1 // Adjust to start from 1
 		if readings[i].BytesSent < readings[i-1].BytesSent {
 			t.Errorf("Reading %d: BytesSent decreased from %d to %d",
 				i, readings[i-1].BytesSent, readings[i].BytesSent)

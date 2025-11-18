@@ -1,7 +1,7 @@
 # DDoS Tools - Network Stress Testing Suite
 
 [![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?style=flat&logo=go)](https://golang.org/)
-[![License](https://img.shields.io/badge/license-Educational-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey)](https://github.com/go-ddos-tools)
 
 A powerful network stress testing and analysis toolkit written in Go. This project is a modern reimplementation of MHDDoS with enhanced performance, cross-platform support, and additional security testing capabilities.
@@ -15,6 +15,8 @@ A powerful network stress testing and analysis toolkit written in Go. This proje
 - The authors assume no liability and are not responsible for any misuse or damage caused by this program
 - By using this software, you agree to use it responsibly and legally
 
+**📄 IMPORTANT**: Read [LICENSE](LICENSE) and [LEGAL.md](LEGAL.md) before using this software.
+
 ## 📋 Table of Contents
 
 - [Features](#features)
@@ -24,6 +26,7 @@ A powerful network stress testing and analysis toolkit written in Go. This proje
 - [Project Structure](#project-structure)
 - [Documentation](#documentation)
 - [Requirements](#requirements)
+- [License](#license)
 - [Contributing](#contributing)
 
 ## ✨ Features
@@ -55,19 +58,29 @@ A powerful network stress testing and analysis toolkit written in Go. This proje
 ## 🎯 Supported Attack Methods
 
 ### Layer 7 (Application Layer) - 27 Methods
+
+**✅ Implemented (8):**
 ```
-CFB, BYPASS, GET, POST, OVH, STRESS, DYN, SLOW, HEAD, NULL,
-COOKIE, PPS, EVEN, GSB, DGB, AVB, CFBUAM, APACHE, XMLRPC,
-BOT, BOMB, DOWNLOADER, KILLER, TOR, RHEX, STOMP
+GET, POST, HEAD, STRESS, SLOW, NULL, COOKIE, PPS
+```
+
+**🚧 Coming Soon (19):**
+```
+CFB, BYPASS, OVH, DYN, EVEN, GSB, DGB, AVB, CFBUAM, APACHE,
+XMLRPC, BOT, BOMB, DOWNLOADER, KILLER, TOR, RHEX, STOMP
 ```
 
 ### Layer 4 (Transport Layer) - 14 Methods
+
+**✅ Implemented (14):**
 ```
 TCP, UDP, SYN, VSE, MINECRAFT, MCBOT, CONNECTION, CPS,
 FIVEM, FIVEM-TOKEN, TS3, MCPE, ICMP, OVH-UDP
 ```
 
 ### Amplification Methods - 7 Methods
+
+**✅ Implemented (7):**
 ```
 MEM, NTP, DNS, ARD, CLDAP, CHAR, RDP
 ```
@@ -268,11 +281,29 @@ Contributions are welcome! Please:
   - Complete Go rewrite
   - Enhanced performance
   - Cross-platform support
-  - Modern Go idioms
+  - Modern Go idioms (Go 1.22+)
+  - **Layer 7**: 8/27 methods implemented (30%)
+  - **Layer 4**: 14/14 methods implemented (100%)
+  - **Amplification**: 7/7 methods implemented (100%)
+  - **Tools**: 5/7 tools implemented (71%)
 
 ## 📄 License
 
-This project is provided for educational purposes only. See [LICENSE](LICENSE) for more information.
+This project is licensed under the **MIT License** with additional terms for responsible use.
+
+**Key Points:**
+- ✅ Free to use, modify, and distribute
+- ✅ Commercial use allowed with proper authorization
+- ✅ Attribution required
+- ⚠️ Must comply with educational/authorized testing terms
+- ⚠️ No warranty provided
+- ⚠️ Authors not liable for misuse
+
+**Required Reading:**
+- [LICENSE](LICENSE) - Full MIT License text and legal disclaimer
+- [LEGAL.md](LEGAL.md) - Comprehensive legal guidelines and responsible use
+
+**Summary**: You are free to use this software for legitimate security testing, education, and research. However, you **MUST** obtain proper authorization before testing any systems you don't own. Unauthorized use is illegal and violations will be prosecuted.
 
 ## 🙏 Acknowledgments
 

