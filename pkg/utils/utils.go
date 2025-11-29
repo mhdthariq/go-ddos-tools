@@ -83,6 +83,28 @@ func LoadLines(filename string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
+// LoadRequiredFile loads a required file and return an error if the file doesn't exist or is empty
+// The fileType parameter is used to create user-friendly error messages (e.g., "user agent", "referer").
+func LoadRequiredFile(filepath, fileType string) ([]string, error) {
+	// Check if file exist
+	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("the %s file doesn't exist: %s", fileType, filepath)
+	}
+
+	// Load file contents
+	lines, err := LoadLines(filepath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load %s file: %v", fileType, err)
+	}
+
+	// Check if file is empty
+	if len(lines) == 0 {
+		return nil, fmt.Errorf("empty %s file: %s", fileType, filepath)
+	}
+
+	return lines, nil
+}
+
 // GetDefaultUserAgents returns default user agents
 func GetDefaultUserAgents() []string {
 	return []string{

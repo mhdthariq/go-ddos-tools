@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -326,6 +327,58 @@ func splitIP(ip string) []string {
 func BenchmarkHumanBytes(b *testing.B) {
 	for b.Loop() {
 		HumanBytes(1073741824)
+	}
+}
+
+// TestLoadRequiredFile tests the LoadRequiredFile helper function
+func TestLoadRequiredFile(t *testing.T) {
+	// Create a temporary directory
+	tmpDir := t.TempDir()
+
+	// Test case 1: Valid file with content
+	validFile := filepath.Join(tmpDir, "valid.txt")
+	content := "line1\nline2\nline3"
+	if err := os.WriteFile(validFile, []byte(content), 0644); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	lines, err := LoadRequiredFile(validFile, "test")
+	if err != nil {
+		t.Errorf("LoadRequiredFile() error = %v; want nil", err)
+	}
+	if len(lines) != 3 {
+		t.Errorf("LoadRequiredFile() returned %d lines; want 3", len(lines))
+	}
+
+	// Test case 2: Non-existent file
+	_, err = LoadRequiredFile(filepath.Join(tmpDir, "nonexistent.txt"), "test")
+	if err == nil {
+		t.Error("LoadRequiredFile() on non-existent file should return error")
+	}
+	// Verify error message contains helpful information
+	if err != nil && !strings.Contains(err.Error(), "doesn't exist") {
+		t.Errorf("LoadRequiredFile() error message should contain 'doesn't exist', got: %s", err.Error())
+	}
+
+	// Test case 3: Empty file
+	emptyFile := filepath.Join(tmpDir, "empty.txt")
+	if err := os.WriteFile(emptyFile, []byte(""), 0644); err != nil {
+		t.Fatalf("Failed to create empty test file: %v", err)
+	}
+
+	_, err = LoadRequiredFile(emptyFile, "test")
+	if err == nil {
+		t.Error("LoadRequiredFile() on empty file should return error")
+	}
+	// Verify error message contains helpful information
+	if err != nil && !strings.Contains(err.Error(), "empty") {
+		t.Errorf("LoadRequiredFile() error message should contain 'empty', got: %s", err.Error())
+	}
+
+	// Test case 4: File type name in error message
+	_, err = LoadRequiredFile(filepath.Join(tmpDir, "missing.txt"), "user agent")
+	if err != nil && !strings.Contains(err.Error(), "user agent") {
+		t.Errorf("LoadRequiredFile() error message should contain file type 'user agent', got: %s", err.Error())
 	}
 }
 

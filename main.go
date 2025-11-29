@@ -184,6 +184,25 @@ func runLayer7Attack(method, target string, cfg *config.Config, wg *sync.WaitGro
 		ui.PrintWarning("%s", result.Hint)
 	}
 
+	// Load user agents and referers from files (matching Python behavior)
+	// These are checked BEFORE proxies to fail fast if files are missing
+	useragentPath := filepath.Join("files", "useragent.txt")
+	referersPath := filepath.Join("files", "referers.txt")
+
+	// Load user agents
+	userAgents, err := utils.LoadRequiredFile(useragentPath, "user agent")
+	if err != nil {
+		return err
+	}
+	ui.PrintSuccess("Loaded %d user agents from %s", len(userAgents), useragentPath)
+
+	// Load referers
+	referers, err := utils.LoadRequiredFile(referersPath, "referer")
+	if err != nil {
+		return err
+	}
+	ui.PrintSuccess("Loaded %d referers from %s", len(referers), referersPath)
+
 	// Load or download proxies
 	var proxies []proxy.Proxy
 	if proxyFile != "" {
@@ -199,17 +218,6 @@ func runLayer7Attack(method, target string, cfg *config.Config, wg *sync.WaitGro
 		} else {
 			ui.PrintSuccess("Loaded %d proxies", len(proxies))
 		}
-	}
-
-	// Load user agents and referers
-	userAgents, _ := utils.LoadLines(filepath.Join("files", "useragent.txt"))
-	referers, _ := utils.LoadLines(filepath.Join("files", "referers.txt"))
-
-	if len(userAgents) == 0 {
-		userAgents = utils.GetDefaultUserAgents()
-	}
-	if len(referers) == 0 {
-		referers = utils.GetDefaultReferers()
 	}
 
 	printAttackBanner(method, target, threads, duration, "Layer7")
