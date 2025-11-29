@@ -2,7 +2,7 @@
 
 **Maintained By**: Muhammad Thariq  
 **Last Updated**: November 2025  
-**Version**: 2.4 SNAPSHOT
+**Version**: 2.5 SNAPSHOT
 
 ---
 
@@ -42,7 +42,7 @@ ddos-tools is fully cross-platform and supports:
 ### Prerequisites
 
 **All Platforms:**
-- Go 1.22 or higher
+- Go 1.22 or higher (required for modern syntax features)
 - Git
 
 ### Linux

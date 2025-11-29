@@ -1,13 +1,13 @@
 # DDoS Tools - Network Stress Testing Suite
 
-[![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?style=flat&logo=go)](https://golang.org/)
+[![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8?style=flat&logo=go)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey)](https://github.com/go-ddos-tools)
 
 A powerful network stress testing and analysis toolkit written in Go. This project is a modern reimplementation of MHDDoS with enhanced performance, cross-platform support, and additional security testing capabilities.
 
 **Maintained By**: Muhammad Thariq  
-**Version**: 2.4 SNAPSHOT
+**Version**: 2.5 SNAPSHOT
 
 ## ⚠️ Legal Disclaimer
 
@@ -97,7 +97,7 @@ MEM, NTP, DNS, ARD, CLDAP, CHAR, RDP
 ## 🚀 Installation
 
 ### Prerequisites
-- Go 1.22 or higher
+- Go 1.22 or higher (required for modern syntax features)
 - Git
 
 ### Build from Source
@@ -234,6 +234,11 @@ For detailed usage instructions, examples, and advanced configurations, see:
 ## 🔄 Recent Updates
 
 ### Latest Changes (November 2025)
+- ✨ **CODE MODERNIZATION - Go 1.22+ Syntax**
+  - Removed custom `min()` and `max()` functions, using Go 1.21+ built-ins
+  - Modernized 19 for-loops to use range-over-int syntax (Go 1.22+)
+  - Improved error wrapping with `%w` for better error chains
+  - Zero compiler warnings or errors
 - 🎉 **ALL 26 LAYER 7 METHODS IMPLEMENTED - 100% COMPLETE!**
 - ✅ **18 New Layer 7 Methods Added**: CFB, BYPASS, OVH, DYN, EVEN, GSB, DGB, AVB, CFBUAM, APACHE, XMLRPC, BOT, BOMB, DOWNLOADER, KILLER, TOR, RHEX, STOMP
 - ✅ **Added Linux User Agents**: Enhanced cross-platform coverage with Chrome and Firefox on Linux
@@ -273,7 +278,7 @@ See [USAGE.md](docs/USAGE.md) for detailed usage of each method.
 ## 🔧 Requirements
 
 ### Runtime Requirements
-- Go 1.22+ (for range over int support)
+- Go 1.22+ (required for range-over-int and modern syntax features)
 - Network connectivity
 - Sufficient system resources (RAM, CPU) for concurrent operations
 
@@ -302,7 +307,8 @@ go test -bench=. ./...
 ### Code Style
 This project follows standard Go conventions:
 - `gofmt` for code formatting
-- Go 1.22+ modern idioms (range over int, slices.Contains, etc.)
+- Go 1.22+ modern idioms (range-over-int, built-in min/max, error wrapping with %w)
+- Go 1.21+ built-in functions (min, max, clear)
 - Comprehensive test coverage
 - Platform-specific code using build tags
 
@@ -350,11 +356,14 @@ Contributions are welcome! Please:
 
 ## 📊 Version History
 
-- **v2.4 SNAPSHOT (Go)** - Current development version
+- **v2.5 SNAPSHOT (Go)** - Current development version
   - Complete Go rewrite
   - Enhanced performance
   - Cross-platform support
-  - Modern Go idioms (Go 1.22+)
+  - Modern Go 1.22+ syntax (range-over-int, built-in min/max)
+  - Improved error handling with proper error chains
+  - Code modernization: 19 for-loops converted to range-over-int
+  - Zero compiler warnings
   - Linux user agent support added
   - Improved documentation structure
   - **Layer 7**: 26/26 methods implemented (100%) ✅ **COMPLETE!**

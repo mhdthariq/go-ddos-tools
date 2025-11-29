@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Code Modernization (November 2025)
+- **Modernized to Go 1.21+ syntax**
+  - Removed custom `min()` and `max()` functions in favor of built-in functions (Go 1.21+)
+  - Updated `pkg/ui/colors.go` ProgressBar to use `min()` and `max()` built-ins
+  - Updated `pkg/ui/validation.go` to use built-in `min()` and `max()`
+- **Modernized to Go 1.22+ range-over-int syntax**
+  - Converted 19 traditional for-loops (`for i := 0; i < n; i++`) to modern `for range n` syntax
+  - Updated all Layer 7 attack methods in `pkg/attacks/layer7.go` (17 methods)
+  - Updated `pkg/ui/color_test.go` TestSpinner function
+  - Updated `pkg/ui/validation.go` levenshteinClose function
+- **Improved error handling**
+  - Changed error wrapping from `%v` to `%w` for proper error chains (Go 1.13+ best practice)
+  - Updated error handling in `main.go` and `pkg/proxy/proxy.go`
+- **Zero compiler warnings or errors**
+- **All tests passing**
+
 ### Added
 - **All 26 Layer 7 attack methods now implemented (100% complete!)**
   - CFB - Cloudflare Bypass
@@ -45,12 +61,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Previous Updates]
 
-### Code Modernization
+### Previous Code Modernization
 - Modernized codebase to Go 1.24+ features
   - Replaced manual slice lookups with `slices.Contains`
   - Replaced `strings.Replace(..., -1)` with `strings.ReplaceAll`
   - Modernized benchmark loops to `b.Loop()`
-  - Modernized numeric loops to "range over int"
   - Used `unsafe.Add` for safer pointer arithmetic
   - Used `net.JoinHostPort` for IPv6-safe address formatting
   - Replaced string concatenation with `strings.Builder`

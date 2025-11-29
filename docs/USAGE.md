@@ -2,7 +2,7 @@
 
 **Maintained By**: Muhammad Thariq  
 **Last Updated**: November 2025  
-**Version**: 2.4 SNAPSHOT
+**Version**: 2.5 SNAPSHOT
 
 ## Table of Contents
 
@@ -24,7 +24,7 @@
 ### Installation & Building
 
 #### Prerequisites
-- Go 1.22 or higher
+- Go 1.22 or higher (required for modern syntax features)
 - Git
 
 #### Linux Installation
@@ -1323,11 +1323,17 @@ taskkill /IM ddos-tools.exe /F
 - ✅ Graceful shutdown (Ctrl+C)
 - ✅ IPv6 compatibility
 - ✅ Cross-platform (Linux, Windows, macOS)
-- ✅ Modern Go 1.22+ idioms
+- ✅ Modern Go 1.22+ idioms (range-over-int, built-in min/max)
+- ✅ Error wrapping with `%w` for proper error chains
+- ✅ Zero compiler warnings
 
-### 🚧 In Development (19/27 Layer 7 Methods)
-- **Layer 7**: CFB, BYPASS, OVH, DYN, EVEN, GSB, DGB, AVB, CFBUAM, APACHE, XMLRPC, BOT, BOMB, DOWNLOADER, KILLER, TOR, RHEX, STOMP
-- **Tools**: CFIP, DNS lookup
+### ✅ Code Modernization (December 2024)
+- **Go 1.21+ Features**: Built-in `min()` and `max()` functions
+- **Go 1.22+ Features**: Range-over-int syntax (19 loops modernized)
+- **Error Handling**: Proper error wrapping with `%w`
+
+### 🚧 In Development
+- **Tools**: CFIP (CloudFlare IP finder), Advanced DNS lookup
 
 ### 📋 Planned Features
 - Web UI for easier management
