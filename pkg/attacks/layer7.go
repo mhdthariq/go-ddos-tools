@@ -297,7 +297,7 @@ func createHTTPClient(cfg *Layer7Config) *http.Client {
 
 	return &http.Client{
 		Transport: transport,
-		Timeout:   10 * time.Second,
+		Timeout:   3 * time.Second,
 	}
 }
 
@@ -316,7 +316,7 @@ func createRawConnection(target string, cfg *Layer7Config) (net.Conn, error) {
 		}
 	}
 
-	conn, err := net.DialTimeout("tcp", host, 10*time.Second)
+	conn, err := net.DialTimeout("tcp", host, 3*time.Second)
 	if err != nil {
 		return nil, err
 	}

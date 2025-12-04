@@ -244,7 +244,21 @@ func runLayer7Attack(method, target string, cfg *config.Config, wg *sync.WaitGro
 	// Monitor attack
 	monitorAttack(duration, method, target, stopChan, sigChan)
 
-	wg.Wait()
+	// Wait for goroutines with timeout
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		// All goroutines finished normally
+	case <-time.After(5 * time.Second):
+		// Timeout after 5 seconds
+		ui.PrintWarning("Some threads did not stop gracefully, forcing shutdown...")
+	}
+
 	printAttackSummary(method, target)
 	return nil
 }
@@ -377,7 +391,21 @@ func runLayer4Attack(method, target string, cfg *config.Config, wg *sync.WaitGro
 	targetStr := fmt.Sprintf("%s:%d", host, port)
 	monitorAttack(duration, method, targetStr, stopChan, sigChan)
 
-	wg.Wait()
+	// Wait for goroutines with timeout
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		// All goroutines finished normally
+	case <-time.After(5 * time.Second):
+		// Timeout after 5 seconds
+		ui.PrintWarning("Some threads did not stop gracefully, forcing shutdown...")
+	}
+
 	printAttackSummary(method, targetStr)
 	return nil
 }
@@ -402,6 +430,8 @@ func monitorAttack(duration int, method, target string, stopChan chan struct{}, 
 				fmt.Println()
 				ui.PrintSuccess("Attack duration completed")
 				close(stopChan)
+				// Give goroutines a moment to see the closed channel
+				time.Sleep(100 * time.Millisecond)
 				return
 			}
 

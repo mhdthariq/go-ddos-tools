@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Graceful Shutdown Improvements (November 2025)
+- **Fixed hanging issue after attack completion**
+  - Added 5-second timeout for goroutine cleanup after attack finishes
+  - Reduced HTTP client timeout from 10s to 3s for faster response to stop signals
+  - Reduced raw connection timeout from 10s to 3s
+  - Added 100ms grace period after closing stop channel
+  - Program now exits promptly when attack reaches 100%
+  - Warning shown if threads don't stop gracefully within timeout
+  - No more need to Ctrl+Z to force stop the program
+
 ### Improved Attack Output Display (November 2025)
 - **Enhanced Attack Configuration Banner**
   - Now displays RPC (Requests Per Connection) for Layer 7 attacks
