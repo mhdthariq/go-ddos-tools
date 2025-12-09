@@ -2,8 +2,9 @@ package utils
 
 import (
 	"bufio"
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	mrand "math/rand/v2"
 	"os"
 	"sync/atomic"
 )
@@ -127,21 +128,26 @@ func GetDefaultReferers() []string {
 	}
 }
 
-// RandomBytes generates random bytes
+// RandomBytes generates random bytes using crypto/rand
 func RandomBytes(n int) []byte {
 	b := make([]byte, n)
-	for i := range b {
-		b[i] = byte(RandInt(0, 255))
+	_, err := rand.Read(b)
+	if err != nil {
+		// Fallback to math/rand/v2 if crypto/rand fails (should actally panic or handle error, but for fallback)
+		for i := range b {
+			b[i] = byte(mrand.IntN(256))
+		}
 	}
 	return b
 }
 
-// RandInt generates a random integer between min and max
+// RandInt generates a random integer between min and max (inclusive)
 func RandInt(min, max int) int {
 	if min >= max {
 		return min
 	}
-	return min + rand.Intn(max-min+1)
+	// math/rand/v2 IntN is [0, n)
+	return min + mrand.IntN(max-min+1)
 }
 
 // RandString generates a random string of length n

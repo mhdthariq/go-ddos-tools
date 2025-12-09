@@ -2,8 +2,9 @@ package layer7
 
 import (
 	"crypto/tls"
-	"math/rand"
+	mrand "math/rand/v2"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"time"
 
@@ -48,19 +49,22 @@ func CreateHTTPClient(cfg *core.AttackConfig) *http.Client {
 		}
 	}
 
+	jar, _ := cookiejar.New(nil)
+
 	return &http.Client{
 		Transport: transport,
 		Timeout:   3 * time.Second,
+		Jar:       jar,
 	}
 }
 
 func (b *BaseAttack) AddHeaders(req *http.Request) {
 	if len(b.Config.UserAgents) > 0 {
-		req.Header.Set("User-Agent", b.Config.UserAgents[rand.Intn(len(b.Config.UserAgents))])
+		req.Header.Set("User-Agent", b.Config.UserAgents[mrand.IntN(len(b.Config.UserAgents))])
 	}
 
 	if len(b.Config.Referers) > 0 {
-		referer := b.Config.Referers[rand.Intn(len(b.Config.Referers))]
+		referer := b.Config.Referers[mrand.IntN(len(b.Config.Referers))]
 		req.Header.Set("Referer", referer+url.QueryEscape(b.Config.Target))
 	}
 
@@ -106,7 +110,7 @@ func CreateRawConnection(target string, cfg *core.AttackConfig) (net.Conn, error
 
 	var conn net.Conn
 	if len(cfg.Proxies) > 0 {
-		p := cfg.Proxies[rand.Intn(len(cfg.Proxies))]
+		p := cfg.Proxies[mrand.IntN(len(cfg.Proxies))]
 		conn, err = p.Dial("tcp", host)
 	} else {
 		conn, err = net.DialTimeout("tcp", host, 3*time.Second)
@@ -136,12 +140,12 @@ func BuildRawHeaders(target string, cfg *core.AttackConfig) string {
 
 	userAgent := "Mozilla/5.0"
 	if len(cfg.UserAgents) > 0 {
-		userAgent = cfg.UserAgents[rand.Intn(len(cfg.UserAgents))]
+		userAgent = cfg.UserAgents[mrand.IntN(len(cfg.UserAgents))]
 	}
 
 	referer := "https://www.google.com/"
 	if len(cfg.Referers) > 0 {
-		referer = cfg.Referers[rand.Intn(len(cfg.Referers))]
+		referer = cfg.Referers[mrand.IntN(len(cfg.Referers))]
 	}
 
 	spoofIP := utils.RandIPv4()
