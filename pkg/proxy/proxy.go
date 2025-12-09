@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -58,8 +59,197 @@ func (p *Proxy) URL() string {
 
 // Dial creates a connection through the proxy
 func (p *Proxy) Dial(network, address string) (net.Conn, error) {
-	// For now, direct dial (proxy support can be added later with proper libraries)
-	return net.DialTimeout(network, address, 10*time.Second)
+	switch p.Type {
+	case HTTP:
+		return p.dialHTTP(network, address)
+	case SOCKS4:
+		return p.dialSOCKS4(network, address)
+	case SOCKS5:
+		return p.dialSOCKS5(network, address)
+	default:
+		return net.DialTimeout(network, address, 10*time.Second)
+	}
+}
+
+func (p *Proxy) dialHTTP(network, address string) (net.Conn, error) {
+	conn, err := net.DialTimeout(network, p.String(), 10*time.Second)
+	if err != nil {
+		return nil, err
+	}
+
+	req := fmt.Sprintf("CONNECT %s HTTP/1.1\r\nHost: %s\r\n\r\n", address, address)
+	if _, err := conn.Write([]byte(req)); err != nil {
+		conn.Close()
+		return nil, err
+	}
+
+	// Read response
+	// We expect HTTP/1.x 200 OK
+	buf := make([]byte, 1024)
+	n, err := conn.Read(buf)
+	if err != nil {
+		conn.Close()
+		return nil, err
+	}
+
+	resp := string(buf[:n])
+	if !strings.Contains(resp, "200") {
+		conn.Close()
+		return nil, fmt.Errorf("proxy handshake failed: %s", strings.Split(resp, "\n")[0])
+	}
+
+	return conn, nil
+}
+
+func (p *Proxy) dialSOCKS4(network, address string) (net.Conn, error) {
+	conn, err := net.DialTimeout(network, p.String(), 10*time.Second)
+	if err != nil {
+		return nil, err
+	}
+
+	host, portStr, err := net.SplitHostPort(address)
+	if err != nil {
+		conn.Close()
+		return nil, err
+	}
+	port, _ := strconv.Atoi(portStr)
+	ip := net.ParseIP(host).To4()
+	if ip == nil {
+		// SOCKS4a (domain resolution) support could be added, but for now fallback or error if not IP
+		// Actually let's just resolve it here
+		ips, err := net.LookupIP(host)
+		if err != nil || len(ips) == 0 {
+			conn.Close()
+			return nil, fmt.Errorf("could not resolve host for SOCKS4: %s", host)
+		}
+		ip = ips[0].To4()
+	}
+
+	// SOCKS4 Packet: [VN, CD, DSTPORT, DSTIP, USERID, NULL]
+	packet := make([]byte, 0, 9)
+	packet = append(packet, 0x04)                           // VN
+	packet = append(packet, 0x01)                           // CD (Connect)
+	packet = append(packet, byte(port>>8), byte(port&0xFF)) // DSTPORT
+	packet = append(packet, ip...)                          // DSTIP
+	packet = append(packet, 0x00)                           // USERID (empty)
+
+	if _, err := conn.Write(packet); err != nil {
+		conn.Close()
+		return nil, err
+	}
+
+	// Read response (8 bytes)
+	resp := make([]byte, 8)
+	if _, err := io.ReadFull(conn, resp); err != nil {
+		conn.Close()
+		return nil, err
+	}
+
+	if resp[1] != 0x5a { // 90 = Request granted
+		conn.Close()
+		return nil, fmt.Errorf("SOCKS4 handshake failed: code %d", resp[1])
+	}
+
+	return conn, nil
+}
+
+func (p *Proxy) dialSOCKS5(network, address string) (net.Conn, error) {
+	conn, err := net.DialTimeout(network, p.String(), 10*time.Second)
+	if err != nil {
+		return nil, err
+	}
+
+	// Initial handshake
+	// [VER, NMETHODS, METHODS...]
+	if _, err := conn.Write([]byte{0x05, 0x01, 0x00}); err != nil {
+		conn.Close()
+		return nil, err
+	}
+
+	// Read response
+	// [VER, METHOD]
+	initResp := make([]byte, 2)
+	if _, err := io.ReadFull(conn, initResp); err != nil {
+		conn.Close()
+		return nil, err
+	}
+
+	if initResp[0] != 0x05 || initResp[1] != 0x00 {
+		conn.Close()
+		return nil, fmt.Errorf("SOCKS5 auth failed or not supported")
+	}
+
+	// Connect request
+	// [VER, CMD, RSV, ATYP, DST.ADDR, DST.PORT]
+	host, portStr, err := net.SplitHostPort(address)
+	if err != nil {
+		conn.Close()
+		return nil, err
+	}
+	port, _ := strconv.Atoi(portStr)
+
+	packet := []byte{0x05, 0x01, 0x00} // Connect, RSVP
+
+	ip := net.ParseIP(host)
+	if ip4 := ip.To4(); ip4 != nil {
+		packet = append(packet, 0x01) // IPv4
+		packet = append(packet, ip4...)
+	} else if ip6 := ip.To16(); ip6 != nil {
+		packet = append(packet, 0x04) // IPv6
+		packet = append(packet, ip6...)
+	} else {
+		// Domain name
+		packet = append(packet, 0x03) // Domain
+		packet = append(packet, byte(len(host)))
+		packet = append(packet, []byte(host)...)
+	}
+
+	packet = append(packet, byte(port>>8), byte(port&0xFF))
+
+	if _, err := conn.Write(packet); err != nil {
+		conn.Close()
+		return nil, err
+	}
+
+	// Read response
+	// [VER, REP, RSV, ATYP, BND.ADDR, BND.PORT]
+	// The response is variable length depending on ATYP
+	// Just read the first 4 bytes to check status
+	resp := make([]byte, 4)
+	if _, err := io.ReadFull(conn, resp); err != nil {
+		conn.Close()
+		return nil, err
+	}
+
+	if resp[1] != 0x00 {
+		conn.Close()
+		return nil, fmt.Errorf("SOCKS5 connect failed: code %d", resp[1])
+	}
+
+	// Drain the rest of the response
+	var addrLen int
+	switch resp[3] {
+	case 0x01:
+		addrLen = 4
+	case 0x04:
+		addrLen = 16
+	case 0x03:
+		lenBuf := make([]byte, 1)
+		if _, err := io.ReadFull(conn, lenBuf); err != nil {
+			conn.Close()
+			return nil, err
+		}
+		addrLen = int(lenBuf[0])
+	}
+
+	// Read addr + port (2 bytes)
+	discard := make([]byte, addrLen+2)
+	if _, err := io.ReadFull(conn, discard); err != nil {
+		conn.Close()
+		return nil, err
+	}
+
+	return conn, nil
 }
 
 // LoadProxies loads proxies from a file
