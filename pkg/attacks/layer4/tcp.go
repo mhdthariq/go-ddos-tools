@@ -138,7 +138,7 @@ func (t *TCPAttack) executeCPS(ctx context.Context) error {
 	return nil
 }
 
-func (t *TCPAttack) executeCONNECTION(ctx context.Context) error {
+func (t *TCPAttack) executeCONNECTION(_ context.Context) error {
 	conn, err := net.DialTimeout("tcp", t.Config.Target, 1*time.Second)
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func (t *TCPAttack) executeCONNECTION(ctx context.Context) error {
 	return nil
 }
 
-func (t *TCPAttack) executeMCBOT(ctx context.Context) error {
+func (t *TCPAttack) executeMCBOT(_ context.Context) error {
 	conn, err := net.DialTimeout("tcp", t.Config.Target, 1*time.Second)
 	if err != nil {
 		return err

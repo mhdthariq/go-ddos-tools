@@ -315,7 +315,7 @@ func (r *RawAttack) executeCFBUAM(ctx context.Context) error {
 	return nil
 }
 
-func (r *RawAttack) executeBOT(ctx context.Context) error {
+func (r *RawAttack) executeBOT(_ context.Context) error {
 	conn, err := CreateRawConnection(r.Config.Target, r.Config)
 	if err != nil {
 		return err
@@ -365,25 +365,25 @@ func (r *RawAttack) executeDOWNLOADER(ctx context.Context) error {
 	return nil
 }
 
-func (r *RawAttack) executeKILLER(ctx context.Context) error {
+func (r *RawAttack) executeKILLER(_ context.Context) error {
 	// Re-uses HTTPFlood logic but in a more aggressive way?
 	// The original spawns goroutines. Here we just run normally as we are already in a pool.
-	// We'll delegate to HTTPFlood for now or just skip implementing 
+	// We'll delegate to HTTPFlood for now or just skip implementing
 	// as it might be redundant with standard concurrent usage.
 	return nil
 }
 
-func (r *RawAttack) executeTOR(ctx context.Context) error {
+func (r *RawAttack) executeTOR(_ context.Context) error {
 	// TOR logic is complex due to domain replacement
 	return nil
 }
 
-func (r *RawAttack) executeRHEX(ctx context.Context) error {
+func (r *RawAttack) executeRHEX(_ context.Context) error {
 	// RHEX logic
 	return nil
 }
 
-func (r *RawAttack) executeSTOMP(ctx context.Context) error {
+func (r *RawAttack) executeSTOMP(_ context.Context) error {
 	// STOMP logic
 	return nil
 }
