@@ -45,6 +45,7 @@ A powerful network stress testing and analysis toolkit written in Go by **Muhamm
 - **Interactive Console**: Built-in tools for network diagnostics and analysis
 
 ### Advanced Features
+- **Dictionary Attacks**: Built-in password dictionary downloads from SecLists for LOGIN attacks
 - **Amplification Attacks**: DNS, NTP, Memcached, and other reflection methods
 - **Game Server Testing**: Specialized methods for Minecraft, FiveM, TeamSpeak, and Source Engine
 - **Custom User Agents**: Randomized or custom user agent rotation

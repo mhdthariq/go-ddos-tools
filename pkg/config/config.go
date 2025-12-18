@@ -7,9 +7,10 @@ import (
 
 // Config holds the application configuration
 type Config struct {
-	MCBot             string          `json:"MCBOT"`
-	MinecraftProtocol int             `json:"MINECRAFT_DEFAULT_PROTOCOL"`
-	ProxyProviders    []ProxyProvider `json:"proxy-providers"`
+	MCBot               string               `json:"MCBOT"`
+	MinecraftProtocol   int                  `json:"MINECRAFT_DEFAULT_PROTOCOL"`
+	ProxyProviders      []ProxyProvider      `json:"proxy-providers"`
+	DictionaryProviders []DictionaryProvider `json:"dictionary-providers"`
 }
 
 // ProxyProvider represents a proxy provider configuration
@@ -17,6 +18,14 @@ type ProxyProvider struct {
 	Type    int    `json:"type"`
 	URL     string `json:"url"`
 	Timeout int    `json:"timeout"`
+}
+
+// DictionaryProvider represents a dictionary provider configuration
+type DictionaryProvider struct {
+	Name     string `json:"name"`
+	Type     string `json:"type"`
+	URL      string `json:"url"`
+	Filename string `json:"filename"`
 }
 
 // LoadConfig loads configuration from a JSON file

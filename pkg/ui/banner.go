@@ -36,7 +36,8 @@ func PrintUsage() {
 
 	fmt.Println(Header("EXAMPLES:"))
 	fmt.Printf("  %s %s %s -threads 1000 -duration 60 -proxy-file http.txt\n", os.Args[0], Color(BrightYellow, "CFB"), Color(BrightMagenta, "https://example.com"))
-	fmt.Printf("  %s %s %s -threads 100 -duration 60\n\n", os.Args[0], Color(BrightYellow, "TCP"), Color(BrightMagenta, "1.1.1.1:80"))
+	fmt.Printf("  %s %s %s -threads 100 -duration 60\n", os.Args[0], Color(BrightYellow, "TCP"), Color(BrightMagenta, "1.1.1.1:80"))
+	fmt.Printf("  %s %s %s --passwords files/passwords-10k.txt\n\n", os.Args[0], Color(BrightYellow, "LOGIN"), Color(BrightMagenta, "https://example.com/login"))
 
 	fmt.Println(Header("FLAGS:"))
 	fmt.Println("  -threads <int>         Number of threads (default: 100)")
@@ -48,6 +49,19 @@ func PrintUsage() {
 	fmt.Println("  -user-agents <string>  File with user agents (default: files/useragent.txt)")
 	fmt.Println("  -referers <string>     File with referers (default: files/referers.txt)")
 	fmt.Println("  -reflectors <string>   File with reflectors for amplification attacks")
+	fmt.Println("  -data <string>         Credentials file for LOGIN (username:password format)")
+	fmt.Println("  -usernames <string>    Username dictionary file for LOGIN")
+	fmt.Println("  -passwords <string>    Password dictionary file for LOGIN")
+	fmt.Println("  -download-dict         Auto-download password dictionary if not found")
+	fmt.Println()
+	fmt.Println(Header("COMMANDS:"))
+	fmt.Println("  help                   Show this help message")
+	fmt.Println("  methods                List all available attack methods")
+	fmt.Println("  dict download <type>   Download password/username dictionary")
+	fmt.Println("  dict list              List available dictionaries")
+	fmt.Println("  tools                  Interactive tools console")
+	fmt.Println("  stop                   Stop all running attacks")
+	fmt.Println("  version                Show version information")
 	fmt.Println()
 }
 

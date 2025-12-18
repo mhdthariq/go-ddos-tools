@@ -57,6 +57,9 @@ func Execute() {
 	case "METHODS":
 		ui.PrintBanner()
 		printMethods()
+	case "DICT":
+		ui.PrintBanner()
+		handleDictCommand(os.Args[2:])
 	default:
 		if err := runAttack(os.Args[1:], sigChan); err != nil {
 			ui.PrintError("%v", err)
@@ -83,6 +86,9 @@ func runAttack(args []string, sigChan chan os.Signal) error {
 	referersFile := fs.String("referers", "files/referers.txt", "Referers file")
 	reflectorsFile := fs.String("reflectors", "", "Reflectors file for amplification attacks")
 	dataFile := fs.String("data", "", "Data file for LOGIN method (username:password)")
+	usernameDict := fs.String("usernames", "", "Username dictionary file")
+	passwordDict := fs.String("passwords", "", "Password dictionary file")
+	downloadDict := fs.Bool("download-dict", false, "Auto-download password dictionary if not found")
 
 	if err := fs.Parse(args[2:]); err != nil {
 		return err
@@ -148,10 +154,49 @@ func runAttack(args []string, sigChan chan os.Signal) error {
 			proxies, _ = proxy.LoadOrDownloadProxies("files/proxies/"+*proxyFile, *proxyType, cfg, target, *threads)
 		}
 
-		if method == "LOGIN" && *dataFile != "" {
-			credentials, err = utils.LoadRequiredFile(*dataFile, "credentials")
-			if err != nil {
-				return err
+		if method == "LOGIN" {
+			if *dataFile != "" {
+				// Load credentials from file (username:password format)
+				credentials, err = utils.LoadCredentialsFromFile(*dataFile)
+				if err != nil {
+					return err
+				}
+			} else if *usernameDict != "" || *passwordDict != "" {
+				// Generate credentials from dictionary files
+				var usernames, passwords []string
+
+				if *usernameDict != "" {
+					usernames, err = utils.LoadDictionary(*usernameDict)
+					if err != nil {
+						return fmt.Errorf("failed to load username dictionary: %w", err)
+					}
+				}
+
+				if *passwordDict != "" {
+					// Auto-download if requested and file doesn't exist
+					if *downloadDict {
+						// Try to auto-download from config
+						// Extract dictionary name from path (e.g., "files/passwords-1k.txt" -> "passwords-1k")
+						dictPath := *passwordDict
+						if strings.HasPrefix(dictPath, "files/") {
+							dictName := strings.TrimPrefix(dictPath, "files/")
+							dictName = strings.TrimSuffix(dictName, ".txt")
+							_ = utils.EnsureDictionaryFromConfig(cfg, dictName)
+						}
+					}
+
+					passwords, err = utils.LoadDictionary(*passwordDict)
+					if err != nil {
+						return fmt.Errorf("failed to load password dictionary: %w", err)
+					}
+				}
+
+				credentials = utils.GenerateCredentials(usernames, passwords)
+				ui.PrintInfo("Generated %d credential combinations", len(credentials))
+			} else {
+				ui.PrintWarning("No credentials provided for LOGIN attack, using defaults")
+				// Use default credentials
+				credentials = utils.GenerateCredentials(nil, nil)
 			}
 		}
 	} else if methods.IsLayer4Method(method) {
@@ -258,4 +303,104 @@ func printMethods() {
 		}
 	}
 	ui.PrintMethods(l7, l4, amp)
+}
+
+func handleDictCommand(args []string) {
+	if len(args) == 0 {
+		printDictUsage()
+		return
+	}
+
+	subcommand := strings.ToLower(args[0])
+
+	// Load config for dictionary providers
+	cfg, err := config.LoadConfig("config.json")
+	if err != nil {
+		ui.PrintError("Failed to load config: %v", err)
+		ui.PrintWarning("Cannot access dictionary providers without config.json")
+		return
+	}
+
+	switch subcommand {
+	case "download":
+		if len(args) < 2 {
+			ui.PrintError("Usage: dict download <type>")
+			ui.PrintInfo("Available types:")
+			for _, provider := range cfg.DictionaryProviders {
+				ui.PrintInfo("  - %s", provider.Name)
+			}
+			return
+		}
+
+		dictType := strings.ToLower(args[1])
+
+		if err := utils.DownloadDictionaryFromConfig(cfg, dictType); err != nil {
+			ui.PrintError("Failed to download dictionary: %v", err)
+			ui.PrintInfo("Available types:")
+			for _, provider := range cfg.DictionaryProviders {
+				ui.PrintInfo("  - %s", provider.Name)
+			}
+			return
+		}
+
+		provider := utils.GetDictionaryProvider(cfg, dictType)
+		ui.PrintSuccess("Dictionary downloaded successfully to %s", provider.Filename)
+
+	case "list":
+		ui.PrintInfo("Available dictionaries:")
+		fmt.Println()
+
+		providers := utils.GetAllDictionaryProviders(cfg)
+		if len(providers) == 0 {
+			ui.PrintWarning("No dictionary providers configured in config.json")
+			return
+		}
+
+		for _, provider := range providers {
+			if _, err := os.Stat(provider.Filename); err == nil {
+				lines, _ := utils.LoadDictionary(provider.Filename)
+				ui.PrintSuccess("✓ %s (%d entries) - %s", provider.Name, len(lines), provider.Filename)
+			} else {
+				ui.PrintWarning("✗ %s - %s (not downloaded)", provider.Name, provider.Filename)
+			}
+		}
+
+	default:
+		printDictUsage()
+	}
+}
+
+func printDictUsage() {
+	fmt.Println()
+	ui.PrintInfo("Dictionary Management Commands:")
+	fmt.Println()
+	fmt.Println("  dict download <type>    Download a password/username dictionary")
+	fmt.Println("  dict list               List available dictionaries")
+	fmt.Println()
+
+	// Load config to show available types
+	cfg, err := config.LoadConfig("config.json")
+	if err == nil && len(cfg.DictionaryProviders) > 0 {
+		ui.PrintInfo("Available dictionary types (from config.json):")
+		fmt.Println()
+		for _, provider := range cfg.DictionaryProviders {
+			fmt.Printf("  %-20s %s\n", provider.Name, provider.Type)
+		}
+	} else {
+		ui.PrintInfo("Available dictionary types:")
+		fmt.Println()
+		fmt.Println("  passwords-500           Top 500 worst passwords (fastest)")
+		fmt.Println("  passwords-1k            Top 1,000 best passwords")
+		fmt.Println("  passwords-10k           Top 10,000 most common passwords")
+		fmt.Println("  usernames               Common usernames")
+	}
+
+	fmt.Println()
+	ui.PrintInfo("Example:")
+	fmt.Println()
+	fmt.Println("  ./ddos-tools dict download passwords-10k")
+	fmt.Println("  ./ddos-tools LOGIN http://example.com/api/login --passwords files/passwords-10k.txt")
+	fmt.Println()
+	ui.PrintInfo("Note: Dictionary URLs are configured in config.json")
+	fmt.Println()
 }
