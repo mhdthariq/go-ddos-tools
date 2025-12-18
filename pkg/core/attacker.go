@@ -18,6 +18,7 @@ type AttackConfig struct {
 	ProtocolID   int
 	UserAgents   []string
 	Referers     []string
+	Credentials  []string
 	RequestsSent *utils.Counter
 	BytesSent    *utils.Counter
 }

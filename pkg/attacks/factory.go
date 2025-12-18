@@ -21,6 +21,8 @@ func NewAttacker(method string, cfg *core.AttackConfig) core.Attacker {
 			return layer7.NewBypassAttack(cfg, method)
 		case "XMLRPC", "APACHE":
 			return layer7.NewAdvancedAttack(cfg, method)
+		case "LOGIN":
+			return layer7.NewLoginFlood(cfg)
 		default:
 			// Fallback to Raw for others or if generic
 			return layer7.NewRawAttack(cfg, method)
