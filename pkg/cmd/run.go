@@ -33,8 +33,8 @@ func Execute() {
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
 	if len(os.Args) < 2 {
-		printBanner()
-		printUsage()
+		ui.PrintBanner()
+		ui.PrintUsage()
 		return
 	}
 
@@ -42,17 +42,17 @@ func Execute() {
 
 	switch command {
 	case "HELP", "-H", "--HELP":
-		printBanner()
-		printUsage()
+		ui.PrintBanner()
+		ui.PrintUsage()
 	case "TOOLS":
-		printBanner()
+		ui.PrintBanner()
 		tools.RunConsole()
 	case "STOP":
 		tools.StopAllAttacks()
 	case "VERSION", "-V", "--VERSION":
-		printBanner()
+		ui.PrintBanner()
 	case "METHODS":
-		printBanner()
+		ui.PrintBanner()
 		printMethods()
 	default:
 		if err := runAttack(sigChan); err != nil {
@@ -216,20 +216,23 @@ func monitorAttack(ctx context.Context, duration int, method, target string, cfg
 	}
 }
 
-func printBanner() {
-	// Re-implement or call ui.Banner
-	fmt.Println("DDoS Tools Refactored")
-}
-
-func printUsage() {
-	// Re-implement usage
-	fmt.Println("Usage: ...")
-}
-
 func printUsageHint() {
-	fmt.Println("Run with help")
+	fmt.Println("Run '" + os.Args[0] + " help' for usage.")
 }
 
 func printMethods() {
-	// Re-implement methods listing
+	l7 := []string{}
+	l4 := []string{}
+	amp := []string{}
+
+	for _, m := range methods.AllMethods {
+		if methods.IsLayer7Method(m) {
+			l7 = append(l7, m)
+		} else if methods.IsAmplificationMethod(m) {
+			amp = append(amp, m)
+		} else {
+			l4 = append(l4, m)
+		}
+	}
+	ui.PrintMethods(l7, l4, amp)
 }
