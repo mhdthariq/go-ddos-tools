@@ -52,7 +52,7 @@ func (a *AmplificationAttack) executeAmplification(ctx context.Context, payload 
 	// because raw spoofing requires root and is less portable.
 	// The original code had both logic but this safe refactor prefers functionality over raw privileges.
 
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

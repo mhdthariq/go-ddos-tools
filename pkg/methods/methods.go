@@ -23,7 +23,7 @@ var AmplificationMethods = []string{
 }
 
 // AllMethods combines all attack methods
-var AllMethods = append(append(Layer7Methods, Layer4Methods...), AmplificationMethods...)
+var AllMethods = slices.Concat(Layer7Methods, Layer4Methods, AmplificationMethods)
 
 // IsValidMethod checks if a method is valid
 func IsValidMethod(method string) bool {

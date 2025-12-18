@@ -25,7 +25,7 @@ func NewHTTPFlood(cfg *core.AttackConfig, method string) *HTTPFlood {
 }
 
 func (h *HTTPFlood) Attack(ctx context.Context) error {
-	for i := 0; i < h.Config.RPC; i++ {
+	for range h.Config.RPC {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -78,7 +78,7 @@ func NewStressFlood(cfg *core.AttackConfig) *StressFlood {
 }
 
 func (s *StressFlood) Attack(ctx context.Context) error {
-	for i := 0; i < s.Config.RPC; i++ {
+	for range s.Config.RPC {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -118,7 +118,7 @@ func NewCookieFlood(cfg *core.AttackConfig) *CookieFlood {
 }
 
 func (c *CookieFlood) Attack(ctx context.Context) error {
-	for i := 0; i < c.Config.RPC; i++ {
+	for range c.Config.RPC {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

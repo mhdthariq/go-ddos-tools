@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -448,10 +450,7 @@ func DownloadFromConfig(cfg *config.Config, proxyType int) ([]Proxy, error) {
 		uniqueProxies[key] = proxy
 	}
 
-	result := make([]Proxy, 0, len(uniqueProxies))
-	for _, proxy := range uniqueProxies {
-		result = append(result, proxy)
-	}
+	result := slices.Collect(maps.Values(uniqueProxies))
 
 	return result, nil
 }

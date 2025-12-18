@@ -11,27 +11,27 @@ import (
 
 // Counter is a thread-safe counter
 type Counter struct {
-	value int64
+	value atomic.Int64
 }
 
 // NewCounter creates a new counter
 func NewCounter() *Counter {
-	return &Counter{value: 0}
+	return &Counter{}
 }
 
 // Add increments the counter
 func (c *Counter) Add(delta int64) {
-	atomic.AddInt64(&c.value, delta)
+	c.value.Add(delta)
 }
 
 // Get returns the current value
 func (c *Counter) Get() int64 {
-	return atomic.LoadInt64(&c.value)
+	return c.value.Load()
 }
 
 // Set sets the counter value
 func (c *Counter) Set(value int64) {
-	atomic.StoreInt64(&c.value, value)
+	c.value.Store(value)
 }
 
 // HumanBytes converts bytes to human-readable format
@@ -155,7 +155,7 @@ func RandString(n int) string {
 	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = letters[RandInt(0, len(letters)-1)]
+		b[i] = letters[mrand.IntN(len(letters))]
 	}
 	return string(b)
 }

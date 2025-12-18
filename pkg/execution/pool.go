@@ -11,11 +11,11 @@ import (
 // RunAttack executes an attack using a worker pool
 func RunAttack(ctx context.Context, attacker core.Attacker, threads int) {
 	var wg sync.WaitGroup
-	
+
 	// Create a cancelable context if not already done, but usually passed in
 	// For this helper, we assume ctx is already managed by the caller (with timeout)
 
-	for i := 0; i < threads; i++ {
+	for range threads {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()

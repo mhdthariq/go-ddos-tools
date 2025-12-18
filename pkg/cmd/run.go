@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"context"
+	"flag"
 	"fmt"
+
 	"os"
 	"os/signal"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -46,8 +47,10 @@ func Execute() {
 		ui.PrintUsage()
 	case "TOOLS":
 		ui.PrintBanner()
+
 		tools.RunConsole()
 	case "STOP":
+
 		tools.StopAllAttacks()
 	case "VERSION", "-V", "--VERSION":
 		ui.PrintBanner()
@@ -55,7 +58,7 @@ func Execute() {
 		ui.PrintBanner()
 		printMethods()
 	default:
-		if err := runAttack(sigChan); err != nil {
+		if err := runAttack(os.Args[1:], sigChan); err != nil {
 			ui.PrintError("%v", err)
 			fmt.Println()
 			printUsageHint()
@@ -64,30 +67,29 @@ func Execute() {
 	}
 }
 
-func runAttack(sigChan chan os.Signal) error {
-	if len(os.Args) < 3 {
+func runAttack(args []string, sigChan chan os.Signal) error {
+	if len(args) < 2 {
 		return fmt.Errorf("insufficient arguments. Expected: <method> <target> [options...]")
 	}
 
-	method := strings.ToUpper(os.Args[1])
-	target := os.Args[2]
+	fs := flag.NewFlagSet(args[0], flag.ContinueOnError)
+	threads := fs.Int("threads", 100, "Number of threads")
+	duration := fs.Int("duration", 60, "Duration of the attack in seconds")
+	rpc := fs.Int("rpc", 100, "Requests per connection")
+	proxyType := fs.Int("proxy-type", 5, "SOCKS proxy type (4 or 5)")
+	proxyFile := fs.String("proxy-file", "proxies.txt", "Proxy file name")
+	configFile := fs.String("config", "config.json", "Configuration file")
+	userAgentsFile := fs.String("user-agents", "files/useragent.txt", "User agents file")
+	referersFile := fs.String("referers", "files/referers.txt", "Referers file")
+	reflectorsFile := fs.String("reflectors", "", "Reflectors file for amplification attacks")
 
-	// Load configuration
-	cfg, err := config.LoadConfig("config.json")
-	if err != nil {
-		ui.PrintWarning("Could not load config.json, using defaults: %v", err)
-		cfg = &config.Config{
-			MCBot:             "MHDDoS_",
-			MinecraftProtocol: 47,
-		}
+	if err := fs.Parse(args[2:]); err != nil {
+		return err
 	}
 
-	// Normalize target URL
-	if !strings.HasPrefix(target, "http") && !strings.Contains(target, ":") {
-		target = "http://" + target
-	}
+	method := strings.ToUpper(args[0])
+	target := args[1]
 
-	// Check if method is valid
 	if !methods.IsValidMethod(method) {
 		suggestions := ui.SuggestMethod(method, methods.AllMethods)
 		errMsg := fmt.Sprintf("invalid method: %s", method)
@@ -97,52 +99,64 @@ func runAttack(sigChan chan os.Signal) error {
 		return fmt.Errorf("%s", errMsg)
 	}
 
-	// Parse arguments based on method type
-	var threads, duration, rpc, proxyType int
-	var proxyFile string
+	if result := ui.ValidateThreads(*threads); !result.Valid {
+		return fmt.Errorf("%s", ui.FormatValidationError(result, "Threads"))
+	}
+	if result := ui.ValidateDuration(*duration); !result.Valid {
+		return fmt.Errorf("%s", ui.FormatValidationError(result, "Duration"))
+	}
+	if methods.IsLayer7Method(method) {
+		if result := ui.ValidateRPC(*rpc); !result.Valid {
+			return fmt.Errorf("%s", ui.FormatValidationError(result, "RPC"))
+		}
+		if result := ui.ValidateProxyType(*proxyType); !result.Valid {
+			return fmt.Errorf("%s", ui.FormatValidationError(result, "Proxy Type"))
+		}
+		if result := ui.ValidateURL(target); !result.Valid {
+			return fmt.Errorf("%s", ui.FormatValidationError(result, "Target URL"))
+		}
+	} else {
+		if result := ui.ValidateHostPort(target); !result.Valid {
+			return fmt.Errorf("%s", ui.FormatValidationError(result, "Target Host/Port"))
+		}
+	}
+
+	// Load configuration
+	cfg, err := config.LoadConfig(*configFile)
+	if err != nil {
+		ui.PrintWarning("Could not load %s, using defaults: %v", *configFile, err)
+		cfg = &config.Config{
+			MCBot:             "MHDDoS_",
+			MinecraftProtocol: 47,
+		}
+	}
+
+	// Normalize target URL
+	if methods.IsLayer7Method(method) && !strings.HasPrefix(target, "http") {
+		target = "http://" + target
+	}
+
 	var proxies []proxy.Proxy
 	var userAgents, referers, reflectors []string
 
 	if methods.IsLayer7Method(method) {
-		if len(os.Args) < 8 {
-			return fmt.Errorf("insufficient arguments for Layer7 attack.\n\n  Usage: %s %s <url> <socks_type> <threads> <proxylist> <rpc> <duration>", os.Args[0], method)
-		}
+		userAgents, _ = utils.LoadRequiredFile(*userAgentsFile, "user agent")
+		referers, _ = utils.LoadRequiredFile(*referersFile, "referer")
 
-		proxyType, _ = strconv.Atoi(os.Args[3])
-		threads, _ = strconv.Atoi(os.Args[4])
-		proxyFile = os.Args[5]
-		rpc, _ = strconv.Atoi(os.Args[6])
-		duration, _ = strconv.Atoi(os.Args[7])
-
-		userAgents, _ = utils.LoadRequiredFile("files/useragent.txt", "user agent")
-		referers, _ = utils.LoadRequiredFile("files/referers.txt", "referer")
-
-		if proxyFile != "" {
-			proxies, _ = proxy.LoadOrDownloadProxies("files/proxies/"+proxyFile, proxyType, cfg, target, threads)
+		if *proxyFile != "" {
+			proxies, _ = proxy.LoadOrDownloadProxies("files/proxies/"+"*proxyFile", *proxyType, cfg, target, *threads)
 		}
 	} else if methods.IsLayer4Method(method) {
-		if len(os.Args) < 5 {
-			return fmt.Errorf("insufficient arguments for Layer4 attack.\n\n  Usage: %s %s <ip:port> <threads> <duration>", os.Args[0], method)
-		}
-		threads, _ = strconv.Atoi(os.Args[3])
-		duration, _ = strconv.Atoi(os.Args[4])
-
-		// Additional args logic from original main.go
-		if len(os.Args) >= 7 {
-			if methods.IsAmplificationMethod(method) {
-				reflectors, _ = utils.LoadLines("files/" + os.Args[5])
-			} else {
-				// Proxy logic for Layer 4
-				// Skipped for brevity in this refactor, assuming standard usage
-			}
+		if methods.IsAmplificationMethod(method) && *reflectorsFile != "" {
+			reflectors, _ = utils.LoadLines("files/" + *reflectorsFile)
 		}
 	}
 
 	attackCfg := &core.AttackConfig{
 		Target:       target,
-		Threads:      threads,
-		Duration:     duration,
-		RPC:          rpc,
+		Threads:      *threads,
+		Duration:     *duration,
+		RPC:          *rpc,
 		Proxies:      proxies,
 		UserAgents:   userAgents,
 		Referers:     referers,
@@ -158,7 +172,7 @@ func runAttack(sigChan chan os.Signal) error {
 	}
 
 	// Start attack
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(duration)*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(*duration)*time.Second)
 	defer cancel()
 
 	// Handle signals to cancel context
@@ -171,10 +185,10 @@ func runAttack(sigChan chan os.Signal) error {
 	ui.PrintInfo("Starting attack...")
 
 	// Run attack in background
-	go execution.RunAttack(ctx, attacker, threads)
+	go execution.RunAttack(ctx, attacker, *threads)
 
 	// Monitor
-	monitorAttack(ctx, duration, method, target, attackCfg)
+	monitorAttack(ctx, *duration, method, target, attackCfg)
 
 	return nil
 }

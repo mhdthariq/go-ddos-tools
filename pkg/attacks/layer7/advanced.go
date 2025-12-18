@@ -36,7 +36,7 @@ func (a *AdvancedAttack) Attack(ctx context.Context) error {
 }
 
 func (a *AdvancedAttack) executeAPACHE(ctx context.Context) error {
-	for i := 0; i < a.Config.RPC; i++ {
+	for range a.Config.RPC {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -69,7 +69,7 @@ func (a *AdvancedAttack) executeAPACHE(ctx context.Context) error {
 }
 
 func (a *AdvancedAttack) executeXMLRPC(ctx context.Context) error {
-	for i := 0; i < a.Config.RPC; i++ {
+	for range a.Config.RPC {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

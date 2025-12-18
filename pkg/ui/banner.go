@@ -30,18 +30,22 @@ func PrintBanner() {
 // PrintUsage prints the usage instructions
 func PrintUsage() {
 	fmt.Println(Header("USAGE:"))
-	fmt.Printf("  %s %s %s [%s]\n\n", os.Args[0], Color(BrightYellow, "<method>"), Color(BrightMagenta, "<url>"), Color(Dim, "flags"))
+	fmt.Printf("  %s %s %s [%s]\n\n", os.Args[0], Color(BrightYellow, "<method>"), Color(BrightMagenta, "<target>"), Color(Dim, "flags"))
 
 	fmt.Println(Header("EXAMPLES:"))
-	fmt.Printf("  %s %s %s 5 1000 proxies.txt 100 60\n", os.Args[0], Color(BrightYellow, "CFB"), Color(BrightMagenta, "https://example.com"))
-	fmt.Printf("  %s %s %s 100 60\n\n", os.Args[0], Color(BrightYellow, "TCP"), Color(BrightMagenta, "1.1.1.1:80"))
+	fmt.Printf("  %s %s %s -threads 1000 -duration 60 -proxy-file http.txt\n", os.Args[0], Color(BrightYellow, "CFB"), Color(BrightMagenta, "https://example.com"))
+	fmt.Printf("  %s %s %s -threads 100 -duration 60\n\n", os.Args[0], Color(BrightYellow, "TCP"), Color(BrightMagenta, "1.1.1.1:80"))
 
-	fmt.Println(Header("LAYER 7:"))
-	fmt.Printf("  %s <url> <socks_type> <threads> <proxies> <rpc> <duration>\n", Color(BrightCyan, "General"))
-	fmt.Printf("  %s: 4=SOCKS4, 5=SOCKS5, 1=HTTP\n\n", Color(Dim, "socks_type"))
-
-	fmt.Println(Header("LAYER 4:"))
-	fmt.Printf("  %s <ip:port> <threads> <duration>\n", Color(BrightCyan, "General"))
+	fmt.Println(Header("FLAGS:"))
+	fmt.Println("  -threads <int>         Number of threads (default: 100)")
+	fmt.Println("  -duration <int>        Duration in seconds (default: 60)")
+	fmt.Println("  -rpc <int>             Requests per connection (L7) (default: 100)")
+	fmt.Println("  -proxy-file <string>   File with proxies (default: proxies.txt)")
+	fmt.Println("  -proxy-type <int>      SOCKS proxy type (4 or 5) (default: 5)")
+	fmt.Println("  -config <string>       Configuration file (default: config.json)")
+	fmt.Println("  -user-agents <string>  File with user agents (default: files/useragent.txt)")
+	fmt.Println("  -referers <string>     File with referers (default: files/referers.txt)")
+	fmt.Println("  -reflectors <string>   File with reflectors for amplification attacks")
 	fmt.Println()
 }
 
@@ -60,10 +64,7 @@ func PrintMethods(l7Methods, l4Methods, ampMethods []string) {
 
 		// Group in columns of 4
 		for i := 0; i < len(methods); i += 4 {
-			end := i + 4
-			if end > len(methods) {
-				end = len(methods)
-			}
+			end := min(i+4, len(methods))
 
 			row := methods[i:end]
 			formattedRow := make([]string, len(row))

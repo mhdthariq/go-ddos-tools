@@ -39,7 +39,7 @@ func (b *BypassAttack) Attack(ctx context.Context) error {
 }
 
 func (b *BypassAttack) executeCFB(ctx context.Context) error {
-	for i := 0; i < b.Config.RPC; i++ {
+	for range b.Config.RPC {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -72,7 +72,7 @@ func (b *BypassAttack) executeCFB(ctx context.Context) error {
 }
 
 func (b *BypassAttack) executeBYPASS(ctx context.Context) error {
-	for i := 0; i < b.Config.RPC; i++ {
+	for range b.Config.RPC {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -98,12 +98,9 @@ func (b *BypassAttack) executeBYPASS(ctx context.Context) error {
 }
 
 func (b *BypassAttack) executeOVH(ctx context.Context) error {
-	maxRPC := b.Config.RPC
-	if maxRPC > 5 {
-		maxRPC = 5
-	}
+	maxRPC := min(b.Config.RPC, 5)
 
-	for i := 0; i < maxRPC; i++ {
+	for range maxRPC {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -134,12 +131,9 @@ func (b *BypassAttack) executeOVH(ctx context.Context) error {
 }
 
 func (b *BypassAttack) executeDGB(ctx context.Context) error {
-	maxRPC := b.Config.RPC
-	if maxRPC > 5 {
-		maxRPC = 5
-	}
+	maxRPC := min(b.Config.RPC, 5)
 
-	for i := 0; i < maxRPC; i++ {
+	for range maxRPC {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

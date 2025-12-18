@@ -81,7 +81,7 @@ func (t *TCPAttack) executeTCP(ctx context.Context) error {
 
 func (t *TCPAttack) executeSYN(ctx context.Context) error {
 	// Simplified SYN flood
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -141,7 +141,7 @@ func (t *TCPAttack) executeMINECRAFT(ctx context.Context) error {
 }
 
 func (t *TCPAttack) executeCPS(ctx context.Context) error {
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
