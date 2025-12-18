@@ -1,5 +1,8 @@
 # Changelog
 
+**Created & Maintained By**: Muhammad Thariq  
+**Project**: DDoS Tools - Original Go implementation inspired by MHDDoS Python (extensively improved)
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -68,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Removed custom `min()` and `max()` functions in favor of built-in functions (Go 1.21+)
   - Updated `pkg/ui/colors.go` ProgressBar to use `min()` and `max()` built-ins
   - Updated `pkg/ui/validation.go` to use built-in `min()` and `max()`
-- **Modernized to Go 1.22+ range-over-int syntax**
+- **Modernized to Go 1.25+ range-over-int syntax**
   - Converted 19 traditional for-loops (`for i := 0; i < n; i++`) to modern `for range n` syntax
   - Updated all Layer 7 attack methods in `pkg/attacks/layer7.go` (17 methods)
   - Updated `pkg/ui/color_test.go` TestSpinner function

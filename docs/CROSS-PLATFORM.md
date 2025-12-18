@@ -42,7 +42,7 @@ ddos-tools is fully cross-platform and supports:
 ### Prerequisites
 
 **All Platforms:**
-- Go 1.22 or higher (required for modern syntax features)
+- Go 1.25 or higher (required for modern syntax features)
 - Git
 
 ### Linux

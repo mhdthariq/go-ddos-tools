@@ -18,11 +18,13 @@ func PrintBanner() {
 `
 	if ColorsEnabled {
 		fmt.Println(BrightCyan + banner + Reset)
-		fmt.Println(Dim + "        Made with " + Red + "<3" + Dim + " by " + BrightBlue + "MHDDoS" + Reset)
+		fmt.Println(Dim + "        Created by " + BrightGreen + "Muhammad Thariq" + Reset)
+		fmt.Println(Dim + "        Inspired by MHDDoS Python (extensively improved)" + Reset)
 		fmt.Println()
 	} else {
 		fmt.Println(banner)
-		fmt.Println("        Made with <3 by MHDDoS")
+		fmt.Println("        Created by Muhammad Thariq")
+		fmt.Println("        Inspired by MHDDoS Python (extensively improved)")
 		fmt.Println()
 	}
 }

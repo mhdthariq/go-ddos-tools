@@ -2,12 +2,31 @@
 
 Welcome to the ddos-tools documentation! This directory contains comprehensive guides, references, and legal information for using this network stress testing toolkit.
 
+## 👤 About This Project
+
+**Created by:** Muhammad Thariq  
+**Project Type:** Original Go implementation  
+**Reference:** Inspired by MHDDoS Python project (extensively improved and rewritten)
+
+This is **not a direct port** but an independent implementation in Go with:
+- Complete architectural redesign for Go's concurrency model
+- 47 attack methods (expanded from original reference)
+- Cross-platform native binaries (Linux, Windows, macOS)
+- Modern Go 1.25+ features and optimizations
+- 7 interactive network analysis tools
+- Enhanced bypass techniques and additional capabilities
+
+All code is original work by Muhammad Thariq, written from scratch in Go with significant improvements over the reference methodology.
+
+**Created by Muhammad Thariq** - An original Go implementation inspired by MHDDoS Python project, with extensive improvements and enhancements.
+
 ## 📋 Quick Navigation
 
 ### Getting Started
 - **[Main README](../README.md)** - Project overview and quick start guide
 - **[USAGE.md](USAGE.md)** - Detailed usage instructions and examples
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guide for contributing to documentation
+- **[ATTRIBUTION.md](../ATTRIBUTION.md)** - Project authorship and acknowledgments
 
 ### Legal & Compliance
 - **[LEGAL.md](LEGAL.md)** - Comprehensive legal guidelines (READ FIRST!)
@@ -23,7 +42,7 @@ Welcome to the ddos-tools documentation! This directory contains comprehensive g
 - **[CROSS-PLATFORM.md](CROSS-PLATFORM.md)** - Cross-platform usage guide (Linux, macOS, Windows)
 - **[OUTPUT-EXAMPLES.md](OUTPUT-EXAMPLES.md)** - Attack output examples and field explanations
 - **[PERFORMANCE.md](PERFORMANCE.md)** - Performance optimization and goroutine efficiency guide
-- **[MODERNIZATION.md](MODERNIZATION.md)** - Code modernization guide (Go 1.22+ features)
+- **[MODERNIZATION.md](MODERNIZATION.md)** - Code modernization guide (Go 1.25+ features)
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and updates
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Documentation contribution guide
 - **[CONFIGURATION.md](CONFIGURATION.md)** - Configuration guide (Coming Soon)
@@ -140,9 +159,9 @@ Cross-platform usage guide:
 
 ### MODERNIZATION.md
 Code modernization documentation:
-- Go 1.22+ syntax features and benefits
+- Go 1.25+ syntax features and benefits
 - Built-in min/max functions (Go 1.21+)
-- Range-over-int loops (Go 1.22+)
+- Range-over-int loops (Go 1.25+)
 - Error wrapping improvements
 - Before/after code examples
 - Migration guide for developers

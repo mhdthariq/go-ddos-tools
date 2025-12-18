@@ -1,13 +1,14 @@
 # DDoS Tools - Network Stress Testing Suite
 
-[![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8?style=flat&logo=go)](https://golang.org/)
+[![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?style=flat&logo=go)](https://golang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey)](https://github.com/go-ddos-tools)
 
-A powerful network stress testing and analysis toolkit written in Go. This project is a modern reimplementation of MHDDoS with enhanced performance, cross-platform support, and additional security testing capabilities.
+A powerful network stress testing and analysis toolkit written in Go by **Muhammad Thariq**. This is an original implementation with significant improvements and enhancements, inspired by the MHDDoS Python project. This Go version offers superior performance, cross-platform support, additional security testing capabilities, and modern Go 1.23+ features.
 
-**Maintained By**: Muhammad Thariq  
-**Version**: 2.5 SNAPSHOT
+**Created & Maintained By**: Muhammad Thariq  
+**Version**: 2.5 SNAPSHOT  
+**Reference**: Inspired by MHDDoS Python project (extensively improved and rewritten in Go)
 
 ## ⚠️ Legal Disclaimer
 
@@ -216,6 +217,7 @@ For detailed usage instructions, examples, and advanced configurations, see:
 ### Core Documentation
 - **[USAGE.md](docs/USAGE.md)** - Comprehensive usage guide with examples
 - **[CHANGELOG.md](docs/CHANGELOG.md)** - Version history and updates
+- **[ATTRIBUTION.md](ATTRIBUTION.md)** - Project authorship and acknowledgments
 
 ### Legal & Compliance
 - **[LEGAL.md](docs/LEGAL.md)** - Detailed legal guidelines and compliance requirements
@@ -278,7 +280,7 @@ See [USAGE.md](docs/USAGE.md) for detailed usage of each method.
 ## 🔧 Requirements
 
 ### Runtime Requirements
-- Go 1.22+ (required for range-over-int and modern syntax features)
+- Go 1.25+ (required for range-over-int and modern syntax features)
 - Network connectivity
 - Sufficient system resources (RAM, CPU) for concurrent operations
 
@@ -307,7 +309,7 @@ go test -bench=. ./...
 ### Code Style
 This project follows standard Go conventions:
 - `gofmt` for code formatting
-- Go 1.22+ modern idioms (range-over-int, built-in min/max, error wrapping with %w)
+- Go 1.25+ modern idioms (range-over-int, built-in min/max, error wrapping with %w)
 - Go 1.21+ built-in functions (min, max, clear)
 - Comprehensive test coverage
 - Platform-specific code using build tags
@@ -360,7 +362,7 @@ Contributions are welcome! Please:
   - Complete Go rewrite
   - Enhanced performance
   - Cross-platform support
-  - Modern Go 1.22+ syntax (range-over-int, built-in min/max)
+  - Modern Go 1.25+ syntax (range-over-int, built-in min/max)
   - Improved error handling with proper error chains
   - Code modernization: 19 for-loops converted to range-over-int
   - Zero compiler warnings
@@ -395,15 +397,35 @@ This project is licensed under the **MIT License** with additional terms for res
 
 ## 🙏 Acknowledgments
 
-- Original MHDDoS project for inspiration
-- Go community for excellent tooling and libraries
-- Contributors and testers
+This project was created from scratch by **Muhammad Thariq** in Go, with significant improvements and new features. While inspired by the MHDDoS Python project, this is an independent implementation with:
 
-## 👤 Maintainer
+- **Complete rewrite in Go** for superior performance and concurrency
+- **Enhanced features**: 47 attack methods (vs. original's subset)
+- **Cross-platform support**: Native binaries for Linux, Windows, and macOS
+- **Modern codebase**: Go 1.23+ features including range-over-int, atomic types, maps/slices packages
+- **Interactive tools**: 7 built-in network analysis tools
+- **Better architecture**: Clean separation of concerns, comprehensive testing
+- **Extended capabilities**: Advanced bypass methods, amplification attacks, game server testing
 
-**Muhammad Thariq**
+**Special Thanks:**
+- MHDDoS Python project - for initial inspiration and methodology reference
+- Go community - for excellent tooling, libraries, and best practices
+- Contributors and testers - for feedback and improvements
+
+**Note**: This Go implementation is not a direct port but rather a reimagined version with substantial enhancements. The majority of the code, architecture, and features are original work by Muhammad Thariq.
+
+## 👤 Author & Maintainer
+
+**Muhammad Thariq** - Creator and Lead Developer
 - Copyright © 2025 Muhammad Thariq
 - Licensed under MIT with Educational Use Terms
+- Original Go implementation with significant improvements over reference material
+
+**Project History:**
+- Created by Muhammad Thariq as an enhanced Go implementation
+- Inspired by MHDDoS Python project (used as methodology reference)
+- Extensively improved with modern Go features, better architecture, and additional capabilities
+- All code written from scratch in Go with original improvements and optimizations
 
 ## 📞 Contact & Support
 
@@ -412,6 +434,21 @@ This project is licensed under the **MIT License** with additional terms for res
 
 ---
 
-**Maintained By**: Muhammad Thariq  
-**Last Updated**: November 2025  
+**Created & Maintained By**: Muhammad Thariq  
+**Last Updated**: December 2025  
 **Remember**: Use this tool responsibly and legally. Unauthorized attacks are illegal and unethical.
+
+---
+
+### 📜 Project Attribution
+
+This project is an **original work by Muhammad Thariq**, implemented in Go with significant enhancements:
+
+✅ **Original Implementation**: Complete Go codebase written from scratch  
+✅ **Enhanced Features**: 47 attack methods with modern techniques  
+✅ **Superior Performance**: Go concurrency and optimization  
+✅ **Cross-Platform**: Native support for Linux, Windows, macOS  
+✅ **Modern Codebase**: Go 1.23+ features and best practices  
+✅ **Additional Tools**: 7 interactive network analysis utilities  
+
+**Reference**: Methodology inspired by MHDDoS Python project, but extensively improved and rewritten with original architecture, additional features, and Go-specific optimizations.

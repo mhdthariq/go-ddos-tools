@@ -8,7 +8,7 @@
 
 ## Overview
 
-This document details the code modernization efforts applied to the DDoS Tools project, bringing the codebase up to modern Go 1.22+ standards with improved syntax, better error handling, and cleaner code patterns.
+This document details the code modernization efforts applied to the DDoS Tools project, bringing the codebase up to modern Go 1.25+ standards with improved syntax, better error handling, and cleaner code patterns.
 
 ---
 
@@ -26,7 +26,7 @@ This document details the code modernization efforts applied to the DDoS Tools p
 
 ## Summary
 
-The DDoS Tools codebase has been fully modernized to use Go 1.22+ features, resulting in:
+The DDoS Tools codebase has been fully modernized to use Go 1.25+ features, resulting in:
 
 - ✅ **Cleaner Code**: Removed 2 custom utility functions, simplified 19 for-loops
 - ✅ **Modern Syntax**: Using built-in `min`/`max` and range-over-int features
@@ -48,17 +48,17 @@ The DDoS Tools codebase has been fully modernized to use Go 1.22+ features, resu
 
 ## Go Version Requirements
 
-### Minimum Version: Go 1.22
+### Minimum Version: Go 1.25
 
-This project now requires **Go 1.22 or higher** due to the following features:
+This project now requires **Go 1.25 or higher** due to the following features:
 
 | Feature | Go Version | Usage in Project |
 |---------|------------|------------------|
 | Built-in `min()`/`max()` | Go 1.21+ | ProgressBar, validation, slicing |
-| Range-over-int | Go 1.22+ | Attack methods, tests, utilities |
+| Range-over-int | Go 1.25+ | Attack methods, tests, utilities |
 | Error wrapping with `%w` | Go 1.13+ | Error handling throughout |
 
-### Why Go 1.22+?
+### Why Go 1.25+?
 
 - **Range-over-int**: Cleaner loop syntax without manual counters
 - **Built-in min/max**: No need for custom utility functions
@@ -138,7 +138,7 @@ minLen := min(len(a), len(b))
 
 ---
 
-### 2. Range-over-int Loops (Go 1.22+)
+### 2. Range-over-int Loops (Go 1.25+)
 
 Converted 19 traditional C-style for-loops to modern range-over-int syntax.
 
@@ -355,7 +355,7 @@ if errors.Is(err, net.DNSError{}) { // Works!
 
 ### 5. Future-proofing
 - ✅ Aligned with modern Go standards
-- ✅ Ready for Go 1.23+ features
+- ✅ Ready for Go 1.25+ features
 - ✅ Better IDE support and tooling
 
 ---
@@ -373,12 +373,12 @@ All modernizations are **backwards compatible in functionality**:
 
 ### Build Requirements
 
-⚠️ **Only breaking change**: Requires Go 1.22+ to build
+⚠️ **Only breaking change**: Requires Go 1.25+ to build
 
 **Previous**: Go 1.20+ (approximately)
-**Current**: Go 1.22+ (required)
+**Current**: Go 1.25+ (required)
 
-**Rationale**: Range-over-int is a Go 1.22 feature and provides significant code quality improvements.
+**Rationale**: Range-over-int is a Go 1.25 feature and provides significant code quality improvements.
 
 ---
 
@@ -505,7 +505,7 @@ $ gofmt -l .
 ### Go Language Specifications
 
 - [Go 1.21 Release Notes](https://go.dev/doc/go1.21) - Built-in min/max/clear
-- [Go 1.22 Release Notes](https://go.dev/doc/go1.22) - Range over integers
+- [Go 1.25 Release Notes](https://go.dev/doc/go1.25) - Range over integers
 - [Go Error Handling](https://go.dev/blog/go1.13-errors) - Error wrapping with %w
 
 ### Best Practices
@@ -518,7 +518,7 @@ $ gofmt -l .
 
 ## Conclusion
 
-The DDoS Tools project is now fully modernized with Go 1.22+ features, resulting in:
+The DDoS Tools project is now fully modernized with Go 1.25+ features, resulting in:
 
 - **Cleaner code** with modern idioms
 - **Better error handling** with proper error chains

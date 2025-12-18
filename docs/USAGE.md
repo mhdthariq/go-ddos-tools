@@ -1,8 +1,9 @@
 # DDoS Tools - Complete Usage Guide
 
-**Maintained By**: Muhammad Thariq  
-**Last Updated**: November 2025  
-**Version**: 2.5 SNAPSHOT
+**Created & Maintained By**: Muhammad Thariq  
+**Last Updated**: December 2025  
+**Version**: 2.5 SNAPSHOT  
+**Note**: Original Go implementation inspired by MHDDoS Python (extensively improved)
 
 ## Table of Contents
 
@@ -24,7 +25,7 @@
 ### Installation & Building
 
 #### Prerequisites
-- Go 1.22 or higher (required for modern syntax features)
+- Go 1.25 or higher (required for modern syntax features)
 - Git
 
 #### Linux Installation
@@ -1323,13 +1324,13 @@ taskkill /IM ddos-tools.exe /F
 - ✅ Graceful shutdown (Ctrl+C)
 - ✅ IPv6 compatibility
 - ✅ Cross-platform (Linux, Windows, macOS)
-- ✅ Modern Go 1.22+ idioms (range-over-int, built-in min/max)
+- ✅ Modern Go 1.25+ idioms (range-over-int, built-in min/max)
 - ✅ Error wrapping with `%w` for proper error chains
 - ✅ Zero compiler warnings
 
 ### ✅ Code Modernization (December 2024)
 - **Go 1.21+ Features**: Built-in `min()` and `max()` functions
-- **Go 1.22+ Features**: Range-over-int syntax (19 loops modernized)
+- **Go 1.25+ Features**: Range-over-int syntax (19 loops modernized)
 - **Error Handling**: Proper error wrapping with `%w`
 
 ### 🚧 In Development
