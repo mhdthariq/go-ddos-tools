@@ -3,6 +3,7 @@ package proxy
 import (
 	"bufio"
 	"context"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"log"
@@ -58,8 +59,280 @@ func (p *Proxy) URL() string {
 
 // Dial creates a connection through the proxy
 func (p *Proxy) Dial(network, address string) (net.Conn, error) {
-	// For now, direct dial (proxy support can be added later with proper libraries)
-	return net.DialTimeout(network, address, 10*time.Second)
+	switch p.Type {
+	case HTTP:
+		return p.dialHTTP(address)
+	case SOCKS4:
+		return p.dialSOCKS4(address)
+	case SOCKS5:
+		return p.dialSOCKS5(address)
+	default:
+		// Fallback to direct dial if proxy type is unknown
+		return net.DialTimeout(network, address, 10*time.Second)
+	}
+}
+
+// dialHTTP creates a connection through an HTTP proxy using CONNECT method
+func (p *Proxy) dialHTTP(address string) (net.Conn, error) {
+	// Connect to the proxy server
+	conn, err := net.DialTimeout("tcp", p.String(), 10*time.Second)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to HTTP proxy: %w", err)
+	}
+
+	// Send CONNECT request
+	connectReq := fmt.Sprintf("CONNECT %s HTTP/1.1\r\nHost: %s\r\n\r\n", address, address)
+	_, err = conn.Write([]byte(connectReq))
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to send CONNECT request: %w", err)
+	}
+
+	// Read response
+	reader := bufio.NewReader(conn)
+	resp, err := http.ReadResponse(reader, nil)
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to read CONNECT response: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		conn.Close()
+		return nil, fmt.Errorf("HTTP proxy CONNECT failed with status: %d", resp.StatusCode)
+	}
+
+	return conn, nil
+}
+
+// dialSOCKS4 creates a connection through a SOCKS4 proxy
+func (p *Proxy) dialSOCKS4(address string) (net.Conn, error) {
+	// Connect to the proxy server
+	conn, err := net.DialTimeout("tcp", p.String(), 10*time.Second)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to SOCKS4 proxy: %w", err)
+	}
+
+	// Parse target address
+	host, portStr, err := net.SplitHostPort(address)
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("invalid target address: %w", err)
+	}
+
+	// Resolve target IP
+	ip := net.ParseIP(host)
+	if ip == nil {
+		// Resolve hostname to IP
+		ips, err := net.LookupIP(host)
+		if err != nil || len(ips) == 0 {
+			conn.Close()
+			return nil, fmt.Errorf("failed to resolve target host: %w", err)
+		}
+		// Use first IPv4 address
+		for _, resolvedIP := range ips {
+			if ipv4 := resolvedIP.To4(); ipv4 != nil {
+				ip = ipv4
+				break
+			}
+		}
+		if ip == nil {
+			conn.Close()
+			return nil, fmt.Errorf("no IPv4 address found for host")
+		}
+	}
+	ip = ip.To4()
+	if ip == nil {
+		conn.Close()
+		return nil, fmt.Errorf("SOCKS4 only supports IPv4 addresses")
+	}
+
+	// Parse port
+	var port uint16
+	_, err = fmt.Sscanf(portStr, "%d", &port)
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("invalid port: %w", err)
+	}
+
+	// Build SOCKS4 connect request
+	// VN (1) | CD (1) | DSTPORT (2) | DSTIP (4) | USERID (variable) | NULL (1)
+	req := make([]byte, 9)
+	req[0] = 0x04 // SOCKS version 4
+	req[1] = 0x01 // CONNECT command
+	binary.BigEndian.PutUint16(req[2:4], port)
+	copy(req[4:8], ip)
+	req[8] = 0x00 // NULL terminator for empty user ID
+
+	_, err = conn.Write(req)
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to send SOCKS4 request: %w", err)
+	}
+
+	// Read response
+	// VN (1) | CD (1) | DSTPORT (2) | DSTIP (4)
+	resp := make([]byte, 8)
+	_, err = io.ReadFull(conn, resp)
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to read SOCKS4 response: %w", err)
+	}
+
+	// Check response code
+	if resp[1] != 0x5A { // 0x5A = request granted
+		conn.Close()
+		return nil, fmt.Errorf("SOCKS4 request failed with code: %d", resp[1])
+	}
+
+	return conn, nil
+}
+
+// dialSOCKS5 creates a connection through a SOCKS5 proxy
+func (p *Proxy) dialSOCKS5(address string) (net.Conn, error) {
+	// Connect to the proxy server
+	conn, err := net.DialTimeout("tcp", p.String(), 10*time.Second)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to SOCKS5 proxy: %w", err)
+	}
+
+	// Step 1: Send greeting with supported authentication methods
+	// VER (1) | NMETHODS (1) | METHODS (variable)
+	greeting := []byte{0x05, 0x01, 0x00} // Version 5, 1 method, no auth
+	_, err = conn.Write(greeting)
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to send SOCKS5 greeting: %w", err)
+	}
+
+	// Read server's chosen method
+	// VER (1) | METHOD (1)
+	authResp := make([]byte, 2)
+	_, err = io.ReadFull(conn, authResp)
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to read SOCKS5 auth response: %w", err)
+	}
+
+	if authResp[0] != 0x05 {
+		conn.Close()
+		return nil, fmt.Errorf("invalid SOCKS5 version in response")
+	}
+
+	if authResp[1] == 0xFF {
+		conn.Close()
+		return nil, fmt.Errorf("SOCKS5 server requires authentication")
+	}
+
+	// Step 2: Send connect request
+	// VER (1) | CMD (1) | RSV (1) | ATYP (1) | DST.ADDR (variable) | DST.PORT (2)
+	host, portStr, err := net.SplitHostPort(address)
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("invalid target address: %w", err)
+	}
+
+	var port uint16
+	_, err = fmt.Sscanf(portStr, "%d", &port)
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("invalid port: %w", err)
+	}
+
+	var req []byte
+	ip := net.ParseIP(host)
+
+	if ip != nil {
+		if ipv4 := ip.To4(); ipv4 != nil {
+			// IPv4 address
+			req = make([]byte, 10)
+			req[0] = 0x05 // Version 5
+			req[1] = 0x01 // CONNECT command
+			req[2] = 0x00 // Reserved
+			req[3] = 0x01 // IPv4 address type
+			copy(req[4:8], ipv4)
+			binary.BigEndian.PutUint16(req[8:10], port)
+		} else {
+			// IPv6 address
+			req = make([]byte, 22)
+			req[0] = 0x05 // Version 5
+			req[1] = 0x01 // CONNECT command
+			req[2] = 0x00 // Reserved
+			req[3] = 0x04 // IPv6 address type
+			copy(req[4:20], ip.To16())
+			binary.BigEndian.PutUint16(req[20:22], port)
+		}
+	} else {
+		// Domain name
+		if len(host) > 255 {
+			conn.Close()
+			return nil, fmt.Errorf("domain name too long")
+		}
+		req = make([]byte, 7+len(host))
+		req[0] = 0x05            // Version 5
+		req[1] = 0x01            // CONNECT command
+		req[2] = 0x00            // Reserved
+		req[3] = 0x03            // Domain name type
+		req[4] = byte(len(host)) // Domain length
+		copy(req[5:5+len(host)], host)
+		binary.BigEndian.PutUint16(req[5+len(host):], port)
+	}
+
+	_, err = conn.Write(req)
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to send SOCKS5 connect request: %w", err)
+	}
+
+	// Read response header
+	// VER (1) | REP (1) | RSV (1) | ATYP (1)
+	respHeader := make([]byte, 4)
+	_, err = io.ReadFull(conn, respHeader)
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to read SOCKS5 response header: %w", err)
+	}
+
+	if respHeader[0] != 0x05 {
+		conn.Close()
+		return nil, fmt.Errorf("invalid SOCKS5 version in connect response")
+	}
+
+	if respHeader[1] != 0x00 {
+		conn.Close()
+		return nil, fmt.Errorf("SOCKS5 connect failed with code: %d", respHeader[1])
+	}
+
+	// Read the rest of the response based on address type
+	var addrLen int
+	switch respHeader[3] {
+	case 0x01: // IPv4
+		addrLen = 4 + 2 // 4 bytes IP + 2 bytes port
+	case 0x03: // Domain
+		// Read domain length first
+		lenByte := make([]byte, 1)
+		_, err = io.ReadFull(conn, lenByte)
+		if err != nil {
+			conn.Close()
+			return nil, fmt.Errorf("failed to read domain length: %w", err)
+		}
+		addrLen = int(lenByte[0]) + 2 // domain + 2 bytes port
+	case 0x04: // IPv6
+		addrLen = 16 + 2 // 16 bytes IP + 2 bytes port
+	default:
+		conn.Close()
+		return nil, fmt.Errorf("unknown address type in SOCKS5 response")
+	}
+
+	// Read and discard the bound address and port
+	boundAddr := make([]byte, addrLen)
+	_, err = io.ReadFull(conn, boundAddr)
+	if err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to read SOCKS5 bound address: %w", err)
+	}
+
+	return conn, nil
 }
 
 // LoadProxies loads proxies from a file
@@ -266,16 +539,42 @@ func DownloadFromConfig(cfg *config.Config, proxyType int) ([]Proxy, error) {
 	return result, nil
 }
 
-// CheckProxy checks if a proxy is working
+// CheckProxy checks if a proxy is working by attempting to dial through it
 func CheckProxy(proxy Proxy, testURL string, timeout time.Duration) bool {
-	// For now, we'll do a basic connection test
-	// In a full implementation, we'd actually test HTTP/SOCKS connectivity
-	conn, err := net.DialTimeout("tcp", proxy.String(), timeout)
+	// Parse the test URL to get host and port
+	u, err := url.Parse(testURL)
 	if err != nil {
 		return false
 	}
-	conn.Close()
-	return true
+
+	host := u.Host
+	if !strings.Contains(host, ":") {
+		if u.Scheme == "https" {
+			host += ":443"
+		} else {
+			host += ":80"
+		}
+	}
+
+	// Set a deadline for the proxy connection test
+	done := make(chan bool, 1)
+
+	go func() {
+		conn, err := proxy.Dial("tcp", host)
+		if err != nil {
+			done <- false
+			return
+		}
+		conn.Close()
+		done <- true
+	}()
+
+	select {
+	case result := <-done:
+		return result
+	case <-time.After(timeout):
+		return false
+	}
 }
 
 // CheckAllProxies checks all proxies concurrently
