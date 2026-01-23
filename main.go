@@ -90,6 +90,8 @@ func runAttack() error {
 		cfg = &config.Config{
 			MCBot:             "MHDDoS_",
 			MinecraftProtocol: 47,
+			UserAgentFile:     "files/useragent.txt",
+			RefererFile:       "files/referers.txt",
 		}
 	}
 
@@ -186,8 +188,9 @@ func runLayer7Attack(method, target string, cfg *config.Config, wg *sync.WaitGro
 
 	// Load user agents and referers from files (matching Python behavior)
 	// These are checked BEFORE proxies to fail fast if files are missing
-	useragentPath := filepath.Join("files", "useragent.txt")
-	referersPath := filepath.Join("files", "referers.txt")
+	// Use configurable paths from config with fallback defaults
+	useragentPath := cfg.UserAgentFile
+	referersPath := cfg.RefererFile
 
 	// Load user agents
 	userAgents, err := utils.LoadRequiredFile(useragentPath, "user agent")

@@ -3,7 +3,7 @@ package utils
 import (
 	"bufio"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"sync/atomic"
 )
@@ -136,12 +136,13 @@ func RandomBytes(n int) []byte {
 	return b
 }
 
-// RandInt generates a random integer between min and max
+// RandInt generates a random integer between min and max (inclusive)
+// Uses math/rand/v2 which auto-seeds and provides better randomness
 func RandInt(min, max int) int {
 	if min >= max {
 		return min
 	}
-	return min + rand.Intn(max-min+1)
+	return min + rand.IntN(max-min+1)
 }
 
 // RandString generates a random string of length n

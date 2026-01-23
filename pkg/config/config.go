@@ -10,6 +10,8 @@ type Config struct {
 	MCBot             string          `json:"MCBOT"`
 	MinecraftProtocol int             `json:"MINECRAFT_DEFAULT_PROTOCOL"`
 	ProxyProviders    []ProxyProvider `json:"proxy-providers"`
+	UserAgentFile     string          `json:"useragent_file"`
+	RefererFile       string          `json:"referer_file"`
 }
 
 // ProxyProvider represents a proxy provider configuration
@@ -39,6 +41,12 @@ func LoadConfig(filename string) (*Config, error) {
 	}
 	if config.MCBot == "" {
 		config.MCBot = "MHDDoS_"
+	}
+	if config.UserAgentFile == "" {
+		config.UserAgentFile = "files/useragent.txt"
+	}
+	if config.RefererFile == "" {
+		config.RefererFile = "files/referers.txt"
 	}
 
 	return &config, nil
