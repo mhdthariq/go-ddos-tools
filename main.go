@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -425,7 +424,8 @@ func monitorAttack(duration int, method, target string, stopChan chan struct{}, 
 	for {
 		select {
 		case <-sigChan:
-			log.Println("\nAttack stopped by user")
+			fmt.Println()
+			ui.PrintInfo("Attack stopped by user")
 			close(stopChan)
 			return
 		case <-ticker.C:

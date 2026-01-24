@@ -63,7 +63,7 @@ func RunLayer7Attack(cfg *Layer7Config, wg *sync.WaitGroup, stopChan chan struct
 	go func() {
 		defer wg.Done()
 		defer cancel() // Cancel context when producer stops
-		ticker := time.NewTicker(1 * time.Millisecond)
+		ticker := time.NewTicker(WorkerTickInterval)
 		defer ticker.Stop()
 
 		for {
@@ -367,8 +367,8 @@ func createHTTPClient(cfg *Layer7Config) *http.Client {
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
-		MaxIdleConns:        100,
-		MaxIdleConnsPerHost: 100,
+		MaxIdleConns:        DefaultMaxIdleConns,
+		MaxIdleConnsPerHost: DefaultMaxIdleConnsPerHost,
 		IdleConnTimeout:     90 * time.Second,
 	}
 
@@ -381,7 +381,7 @@ func createHTTPClient(cfg *Layer7Config) *http.Client {
 
 	return &http.Client{
 		Transport: transport,
-		Timeout:   3 * time.Second,
+		Timeout:   DefaultHTTPTimeout,
 	}
 }
 

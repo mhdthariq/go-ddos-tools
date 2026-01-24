@@ -193,6 +193,138 @@ func TestProxyProvider(t *testing.T) {
 	}
 }
 
+// TestConfigValidate tests the Config.Validate() method
+func TestConfigValidate(t *testing.T) {
+	tests := []struct {
+		name    string
+		config  Config
+		wantErr bool
+		errMsg  string
+	}{
+		{
+			name: "valid config with all fields",
+			config: Config{
+				MCBot:             "TestBot_",
+				MinecraftProtocol: 340,
+				ProxyProviders: []ProxyProvider{
+					{Type: 1, URL: "http://example.com/proxies.txt", Timeout: 5},
+					{Type: 5, URL: "http://example.com/socks5.txt", Timeout: 10},
+				},
+				UserAgentFile: "files/useragent.txt",
+				RefererFile:   "files/referers.txt",
+			},
+			wantErr: false,
+		},
+		{
+			name: "valid config with no proxy providers",
+			config: Config{
+				MCBot:             "TestBot_",
+				MinecraftProtocol: 47,
+				ProxyProviders:    []ProxyProvider{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "invalid proxy provider timeout (zero)",
+			config: Config{
+				ProxyProviders: []ProxyProvider{
+					{Type: 1, URL: "http://example.com/proxies.txt", Timeout: 0},
+				},
+			},
+			wantErr: true,
+			errMsg:  "timeout must be positive",
+		},
+		{
+			name: "invalid proxy provider timeout (negative)",
+			config: Config{
+				ProxyProviders: []ProxyProvider{
+					{Type: 1, URL: "http://example.com/proxies.txt", Timeout: -5},
+				},
+			},
+			wantErr: true,
+			errMsg:  "timeout must be positive",
+		},
+		{
+			name: "invalid proxy provider URL (empty)",
+			config: Config{
+				ProxyProviders: []ProxyProvider{
+					{Type: 1, URL: "", Timeout: 5},
+				},
+			},
+			wantErr: true,
+			errMsg:  "URL cannot be empty",
+		},
+		{
+			name: "invalid proxy type",
+			config: Config{
+				ProxyProviders: []ProxyProvider{
+					{Type: 99, URL: "http://example.com/proxies.txt", Timeout: 5},
+				},
+			},
+			wantErr: true,
+			errMsg:  "invalid type",
+		},
+		{
+			name: "valid proxy types",
+			config: Config{
+				ProxyProviders: []ProxyProvider{
+					{Type: 0, URL: "http://example.com/all.txt", Timeout: 5},
+					{Type: 1, URL: "http://example.com/http.txt", Timeout: 5},
+					{Type: 4, URL: "http://example.com/socks4.txt", Timeout: 5},
+					{Type: 5, URL: "http://example.com/socks5.txt", Timeout: 5},
+					{Type: 6, URL: "http://example.com/random.txt", Timeout: 5},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "negative minecraft protocol",
+			config: Config{
+				MinecraftProtocol: -1,
+			},
+			wantErr: true,
+			errMsg:  "minecraft protocol must be non-negative",
+		},
+		{
+			name: "zero minecraft protocol is valid",
+			config: Config{
+				MinecraftProtocol: 0,
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.config.Validate()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Config.Validate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.wantErr && err != nil {
+				if tt.errMsg != "" && !contains(err.Error(), tt.errMsg) {
+					t.Errorf("Config.Validate() error = %v, want error containing %q", err, tt.errMsg)
+				}
+			}
+		})
+	}
+}
+
+// contains checks if a string contains a substring
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(substr) == 0 ||
+		(len(s) > 0 && len(substr) > 0 && searchString(s, substr)))
+}
+
+func searchString(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
+}
+
 // BenchmarkLoadConfig benchmarks config loading
 func BenchmarkLoadConfig(b *testing.B) {
 	// Create a temporary config file

@@ -2,6 +2,7 @@ package tools
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -101,7 +102,32 @@ func RunConsole() {
 
 // runDstat displays network and system statistics
 func runDstat() {
-	fmt.Println("Press Ctrl+C to stop DSTAT")
+	fmt.Println("Press 'q' to stop DSTAT and return to menu")
+	fmt.Println()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Handle keyboard input in separate goroutine
+	go func() {
+		reader := bufio.NewReader(os.Stdin)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				// Set stdin to non-blocking mode for character reading
+				char, _, err := reader.ReadRune()
+				if err != nil {
+					continue
+				}
+				if char == 'q' || char == 'Q' {
+					cancel()
+					return
+				}
+			}
+		}
+	}()
 
 	// Initialize stats
 	if !statsRecorded {
@@ -110,34 +136,41 @@ func runDstat() {
 		time.Sleep(1 * time.Second)
 	}
 
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
 	for {
-		oldStats := currentStats
-		updateNetworkStats()
+		select {
+		case <-ctx.Done():
+			fmt.Println("\nDSTAT stopped.")
+			return
+		case <-ticker.C:
+			oldStats := currentStats
+			updateNetworkStats()
 
-		// Calculate deltas
-		bytesSent := currentStats.BytesSent - oldStats.BytesSent
-		bytesRecv := currentStats.BytesReceived - oldStats.BytesReceived
-		packetsSent := currentStats.PacketsSent - oldStats.PacketsSent
-		packetsRecv := currentStats.PacketsRecv - oldStats.PacketsRecv
+			// Calculate deltas
+			bytesSent := currentStats.BytesSent - oldStats.BytesSent
+			bytesRecv := currentStats.BytesReceived - oldStats.BytesReceived
+			packetsSent := currentStats.PacketsSent - oldStats.PacketsSent
+			packetsRecv := currentStats.PacketsRecv - oldStats.PacketsRecv
 
-		// Get memory stats
-		var m runtime.MemStats
-		runtime.ReadMemStats(&m)
+			// Get memory stats
+			var m runtime.MemStats
+			runtime.ReadMemStats(&m)
 
-		memUsedMB := m.Alloc / 1024 / 1024
-		memTotalMB := m.Sys / 1024 / 1024
-		memPercent := float64(m.Alloc) / float64(m.Sys) * 100
+			memUsedMB := m.Alloc / 1024 / 1024
+			memTotalMB := m.Sys / 1024 / 1024
+			memPercent := float64(m.Alloc) / float64(m.Sys) * 100
 
-		fmt.Printf("\n--- Network & System Statistics ---\n")
-		fmt.Printf("Bytes Sent:        %s/s\n", utils.HumanBytes(bytesSent))
-		fmt.Printf("Bytes Received:    %s/s\n", utils.HumanBytes(bytesRecv))
-		fmt.Printf("Packets Sent:      %s/s\n", utils.HumanFormat(packetsSent))
-		fmt.Printf("Packets Received:  %s/s\n", utils.HumanFormat(packetsRecv))
-		fmt.Printf("Memory Usage:      %d MB / %d MB (%.2f%%)\n", memUsedMB, memTotalMB, memPercent)
-		fmt.Printf("Goroutines:        %d\n", runtime.NumGoroutine())
-		fmt.Println("-----------------------------------")
-
-		time.Sleep(1 * time.Second)
+			fmt.Printf("\n--- Network & System Statistics ---\n")
+			fmt.Printf("Bytes Sent:        %s/s\n", utils.HumanBytes(bytesSent))
+			fmt.Printf("Bytes Received:    %s/s\n", utils.HumanBytes(bytesRecv))
+			fmt.Printf("Packets Sent:      %s/s\n", utils.HumanFormat(packetsSent))
+			fmt.Printf("Packets Received:  %s/s\n", utils.HumanFormat(packetsRecv))
+			fmt.Printf("Memory Usage:      %d MB / %d MB (%.2f%%)\n", memUsedMB, memTotalMB, memPercent)
+			fmt.Printf("Goroutines:        %d\n", runtime.NumGoroutine())
+			fmt.Println("-----------------------------------")
+		}
 	}
 }
 
